@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode.commandbase.commands;
 
-import static org.firstinspires.ftc.teamcode.commandbase.Intake.intakePivotState;
 import static org.firstinspires.ftc.teamcode.hardware.Globals.*;
 
+import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandBase;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 
 import org.firstinspires.ftc.teamcode.commandbase.Intake;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
@@ -34,6 +36,7 @@ public class SetIntake extends CommandBase {
 
         addRequirements(robot.intake);
     }
+
 
     @Override
     public void initialize() {

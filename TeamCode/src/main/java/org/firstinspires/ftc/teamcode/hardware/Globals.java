@@ -64,7 +64,7 @@ public class Globals {
     public static double INTAKE_PIVOT_TRANSFER_POS = 0.33;
     public static double INTAKE_PIVOT_READY_TRANSFER_POS = 0.25;
     public static double INTAKE_PIVOT_INSIDE_POS = 0.25;
-    public static double INTAKE_PIVOT_INTAKE_POS = 0.86;
+    public static double INTAKE_PIVOT_INTAKE_POS = 0.84;
     public static double INTAKE_PIVOT_READY_INTAKE_POS = 0.54;
     public static double INTAKE_PIVOT_HOVER_INTAKE_POS = 0.71;
 
@@ -90,8 +90,8 @@ public class Globals {
     public static double INTAKE_PIVOT_MOVEMENT_TIME = 497  + 200; // 200 milliseconds of buffer
 
     // Deposit Claw
-    public static double DEPOSIT_CLAW_OPEN_POS = 0.7;
-    public static double DEPOSIT_CLAW_CLOSE_POS = 1.1;
+    public static double DEPOSIT_CLAW_OPEN_POS = 0.45;
+    public static double DEPOSIT_CLAW_CLOSE_POS = 0.9;
     public static double DEPOSIT_CLAW_AAA_POS = 0.4;
 
 
@@ -102,9 +102,9 @@ public class Globals {
     public static double WRIST_BACK_SPECIMEN_SCORING = 0.7;
     public static double WRIST_FRONT_SPECIMEN_INTAKE = 0.5;//
     public static double WRIST_BACK_SPECIMEN_INTAKE = 0.2;
-    public static double WRIST_TRANSFER = 0.12;
-    public static double WRIST_MIDDLE_HOLD = 0.12;
-    public static double WRIST_READY_TRANSFER = 0.12;
+    public static double WRIST_TRANSFER = 0.1;
+    public static double WRIST_MIDDLE_HOLD = 0.1;
+    public static double WRIST_READY_TRANSFER = 0.1;
 
     public static double WRIST_INSIDE = 0.4;
 

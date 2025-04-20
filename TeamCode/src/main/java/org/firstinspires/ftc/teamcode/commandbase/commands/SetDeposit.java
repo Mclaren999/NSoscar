@@ -41,7 +41,7 @@ public class SetDeposit extends CommandBase {
             // Move slides to above pivot ready extension if target is below the pivot ready extension so that arm can move later
             // If it is more than that just yolo it because slides are faster than the pivot so arm is ready to move instantly
             robot.deposit.setSlideTarget(target);
-            new WaitCommand(2000);
+            new WaitCommand(200);
             robot.deposit.setClawOpen(true);
 
             // Index for moving the arm
