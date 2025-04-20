@@ -9,7 +9,7 @@ import com.seattlesolvers.solverslib.command.WaitCommand;
 import org.firstinspires.ftc.teamcode.commandbase.Deposit;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 
-public class SetDeposit extends CommandBase {
+public class SetAuto extends CommandBase {
     private final Robot robot;
     private final Deposit.DepositPivotState pivotState;
     private final double target;
@@ -20,7 +20,7 @@ public class SetDeposit extends CommandBase {
     private double previousServoPos;
     private double currentServoPos;
 
-    public SetDeposit(Robot robot, Deposit.DepositPivotState pivotState, double target, boolean clawOpen) {
+    public SetAuto(Robot robot, Deposit.DepositPivotState pivotState, double target, boolean clawOpen) {
         this.robot = robot;
         this.pivotState = pivotState;
         this.target = target;
@@ -37,12 +37,14 @@ public class SetDeposit extends CommandBase {
         } else {
             // Always close claw first in case of any arm movements that need to be done
 
-
             // Move slides to above pivot ready extension if target is below the pivot ready extension so that arm can move later
             // If it is more than that just yolo it because slides are faster than the pivot so arm is ready to move instantly
             robot.deposit.setSlideTarget(target);
-            new WaitCommand(2000);
-            robot.deposit.setClawOpen(true);
+            new WaitCommand(200);
+
+            robot.deposit.setClawOpen(false);
+
+//            robot.deposit.setClawOpen(false);
 
             // Index for moving the arm
             if (pivotState.equals(Deposit.DepositPivotState.FRONT_SPECIMEN_SCORING) || pivotState.equals(Deposit.DepositPivotState.BACK_SPECIMEN_SCORING)) {
@@ -108,4 +110,3 @@ public class SetDeposit extends CommandBase {
 //        }
 //    }
 }
-

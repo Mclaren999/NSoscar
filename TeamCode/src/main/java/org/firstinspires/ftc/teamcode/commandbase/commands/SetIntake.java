@@ -4,6 +4,7 @@ import static org.firstinspires.ftc.teamcode.commandbase.Intake.intakePivotState
 import static org.firstinspires.ftc.teamcode.hardware.Globals.*;
 
 import com.seattlesolvers.solverslib.command.CommandBase;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.commandbase.Intake;
@@ -21,6 +22,7 @@ public class SetIntake extends CommandBase {
 
     private boolean waitForPivot = false;
     private boolean waitForSample = false;
+    private boolean encoderReset = false;
 
     public SetIntake(Robot robot, Intake.IntakePivotState pivotState, Intake.IntakeMotorState motorState, double target, boolean waitForSample) {
         this.robot = robot;
@@ -50,6 +52,7 @@ public class SetIntake extends CommandBase {
         }
 
         robot.intake.setExtendoTarget(target);
+        encoderReset = false; // Reset flag for encoder reset
     }
 
     @Override
@@ -57,6 +60,13 @@ public class SetIntake extends CommandBase {
         if ((timer.milliseconds() > Math.abs(previousServoPos - currentServoPos) * INTAKE_PIVOT_MOVEMENT_TIME) && motorState.equals(Intake.IntakeMotorState.REVERSE) && waitForPivot) {
             robot.intake.setActiveIntake(motorState);
             waitForPivot = false;
+        }
+
+        // Check if extendo has reached target and is retracted (assuming target = 0 is retracted)
+        if (robot.intake.extendoReached && target == 0 && !encoderReset) {
+            robot.liftBottom.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.liftBottom.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            encoderReset = true; // Prevent repeated resets
         }
     }
 
@@ -77,8 +87,6 @@ public class SetIntake extends CommandBase {
         }
 
         return (robot.intake.extendoReached &&
-                (timer.milliseconds() > Math.abs(previousServoPos - currentServoPos) * INTAKE_PIVOT_MOVEMENT_TIME)
-        );
+                (timer.milliseconds() > Math.abs(previousServoPos - currentServoPos) * INTAKE_PIVOT_MOVEMENT_TIME));
     }
 }
-

@@ -230,7 +230,7 @@ public class FullTeleOp extends CommandOpMode {
                 new InstantCommand(() -> robot.drive.setHang(Drive.HangState.EXTEND))
         );
 
-        /* Untested xTeleOp Spec Automation
+        // Untested xTeleOp Spec Automation
         operator.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(
                 new UninterruptibleCommand(
                         new RepeatCommand(
@@ -252,7 +252,6 @@ public class FullTeleOp extends CommandOpMode {
                         new InstantCommand(() -> robot.follower.startTeleopDrive())
                 )
         );
-        */
 
         super.run();
     }
@@ -294,7 +293,7 @@ public class FullTeleOp extends CommandOpMode {
         }
 
         // Pinpoint Field Centric Code
-        double speedMultiplier = 0.35 + (1 - 0.35) * gamepad1.left_trigger;
+        double speedMultiplier = 0.7 + (1 - 0.7) * gamepad1.left_trigger;
         robot.follower.setTeleOpMovementVectors(-gamepad1.left_stick_y * speedMultiplier, -gamepad1.left_stick_x * speedMultiplier, -gamepad1.right_stick_x * speedMultiplier * 0.40, false);
         robot.follower.update();
 

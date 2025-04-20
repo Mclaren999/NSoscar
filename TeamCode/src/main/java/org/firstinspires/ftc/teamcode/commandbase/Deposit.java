@@ -2,7 +2,9 @@ package org.firstinspires.ftc.teamcode.commandbase;
 
 import static org.firstinspires.ftc.teamcode.hardware.Globals.*;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
+import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.controller.PIDFController;
 import com.qualcomm.robotcore.util.Range;
 
@@ -138,11 +140,18 @@ public class Deposit extends SubsystemBase {
                 robot.leftDepositPivot.setPosition(DEPOSIT_PIVOT_MIDDLE_POS);
                 robot.rightDepositPivot.setPosition(DEPOSIT_PIVOT_MIDDLE_POS);
                 robot.depositWrist.setPosition(WRIST_MIDDLE_HOLD);
+//                new WaitCommand(6000);
+//                robot.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                robot.rightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 break;
             case INSIDE:
                 robot.leftDepositPivot.setPosition(DEPOSIT_PIVOT_INSIDE_POS);
                 robot.rightDepositPivot.setPosition(DEPOSIT_PIVOT_INSIDE_POS);
                 robot.depositWrist.setPosition(WRIST_INSIDE);
+//                new WaitCommand(500);
+//                robot.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//                robot.rightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
                 break;
         }
         Deposit.depositPivotState = depositPivotState;

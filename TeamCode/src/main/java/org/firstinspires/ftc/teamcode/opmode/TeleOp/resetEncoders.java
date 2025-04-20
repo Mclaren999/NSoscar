@@ -54,10 +54,14 @@ public class resetEncoders extends CommandOpMode {
         robot.liftTop.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.liftTop.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
+        robot.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.rightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
         robot.extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         telemetry.addData("liftEncoder", robot.liftEncoder.getPosition());
+        telemetry.addData("RightFront", robot.rightFront.getPosition());
         telemetry.addData("extensionEncoder", robot.extensionEncoder.getPosition());
 
         // DO NOT REMOVE! Needed for telemetry

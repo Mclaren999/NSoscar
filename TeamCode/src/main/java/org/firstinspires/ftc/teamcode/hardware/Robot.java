@@ -121,13 +121,14 @@ public class Robot {
         liftBottom.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         liftTop.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        liftTop.setDirection(DcMotorSimple.Direction.REVERSE);
+        liftTop.setDirection(DcMotorSimple.Direction.FORWARD);
         leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
         leftBack.setDirection(DcMotorSimple.Direction.REVERSE);
         intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        liftEncoder = new Motor(hardwareMap, "liftTop").encoder;
-        extensionEncoder = new Motor(hardwareMap, "extension").encoder;
+
+        liftEncoder = new Motor(hardwareMap, "FR").encoder;
+        extensionEncoder = new Motor(hardwareMap, "liftTop").encoder;
         liftEncoder.setDirection(Motor.Direction.REVERSE);
         extensionEncoder.setDirection(Motor.Direction.REVERSE);
 
@@ -145,7 +146,7 @@ public class Robot {
         leftIntakePivot.setDirection(Servo.Direction.REVERSE);
         leftDepositPivot.setDirection(Servo.Direction.REVERSE);
         rightHang.setDirection(CRServo.Direction.REVERSE);
-        extension.setDirection(CRServo.Direction.REVERSE);
+        extension.setDirection(CRServo.Direction.FORWARD);
 
         colorSensor = (RevColorSensorV3) hardwareMap.colorSensor.get("colorSensor");
 
@@ -174,7 +175,7 @@ public class Robot {
 
         follower = new Follower(hardwareMap, FConstants.class, LConstants.class);
 
-        FollowerConstants.useBrakeModeInTeleOp = false;
+        FollowerConstants.useBrakeModeInTeleOp = true;
 
         poseUpdater = new PoseUpdater(hardwareMap);
 

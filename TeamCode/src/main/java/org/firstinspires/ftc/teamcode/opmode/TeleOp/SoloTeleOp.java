@@ -27,6 +27,7 @@ import android.transition.Slide;
 import com.pedropathing.localization.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
@@ -40,9 +41,12 @@ import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.commandbase.Deposit;
 import org.firstinspires.ftc.teamcode.commandbase.Drive;
 import org.firstinspires.ftc.teamcode.commandbase.Intake;
 import org.firstinspires.ftc.teamcode.commandbase.commands.RealTransfer;
+import org.firstinspires.ftc.teamcode.commandbase.commands.ServoOnlyTransfer;
+import org.firstinspires.ftc.teamcode.commandbase.commands.SetAuto;
 import org.firstinspires.ftc.teamcode.commandbase.commands.SetDeposit;
 import org.firstinspires.ftc.teamcode.commandbase.commands.SetIntake;
 import org.firstinspires.ftc.teamcode.commandbase.commands.UndoTransfer;
@@ -87,30 +91,83 @@ public class SoloTeleOp extends CommandOpMode {
         operator = new GamepadEx(gamepad2);
 
         // Driver Gamepad controls
-        driver.getGamepadButton(GamepadKeys.Button.CIRCLE).whenPressed(
-                new InstantCommand(() -> robot.intake.toggleActiveIntake(SampleColorTarget.ANY_COLOR))
-        );
+
 
         driver.getGamepadButton(GamepadKeys.Button.CROSS).whenPressed(
-                new InstantCommand(() -> robot.intake.toggleActiveIntake(SampleColorTarget.ALLIANCE_ONLY))
-        );
-
-        driver.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
-                new SetIntake(robot, IntakePivotState.INTAKE_READY, IntakeMotorState.HOLD, MAX_EXTENDO_EXTENSION/2, true)
-        );
-
-        driver.getGamepadButton(GamepadKeys.Button.TRIANGLE).whenPressed(
-                new SetIntake(robot, IntakePivotState.INTAKE_READY, intakeMotorState, MAX_EXTENDO_EXTENSION, true)
-        );
-
-        driver.getGamepadButton(GamepadKeys.Button.DPAD_UP).whenPressed(
-                new InstantCommand(() -> robot.follower.setPose(new Pose(0, 0, 0)))
-        );
-
-        driver.getGamepadButton(GamepadKeys.Button.DPAD_DOWN).whenPressed(
                 new SequentialCommandGroup(
-                        new InstantCommand(() -> robot.intake.setPivot(IntakePivotState.INTAKE_READY)),
-                        new InstantCommand(() -> robot.intake.setActiveIntake(IntakeMotorState.HOLD))
+                        new SetIntake(robot, IntakePivotState.INTAKE_READY, intakeMotorState, MAX_EXTENDO_EXTENSION, true),
+                        new InstantCommand(() -> robot.intake.toggleActiveIntake(SampleColorTarget.ANY_COLOR))
+                )
+        );
+
+        driver.getGamepadButton(GamepadKeys.Button.CIRCLE).whenPressed(
+                new InstantCommand(() -> robot.intake.setPivot(IntakePivotState.INTAKE))
+        );
+
+        operator.getGamepadButton(GamepadKeys.Button.TRIANGLE).whenPressed(
+                new UninterruptibleCommand(
+//                        new InstantCommand(() -> robot.deposit.setClawOpen(false)),
+//                        new WaitCommand(300),
+                        new SetAuto(robot, DepositPivotState.BACK_SPECIMEN_SCORING, BACK_HIGH_SPECIMEN_HEIGHT, false).withTimeout(1500)
+                )
+        );
+
+        operator.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
+                new UninterruptibleCommand(
+//                        new InstantCommand(() -> robot.deposit.setClawOpen(true)),
+                        new SetAuto(robot, DepositPivotState.FRONT_SPECIMEN_INTAKE, 0, true).withTimeout(1500)
+                )
+        );
+        operator.getGamepadButton(GamepadKeys.Button.CROSS).whenPressed(
+                new UninterruptibleCommand(
+                        new SequentialCommandGroup(
+                                new SetIntake(robot, Intake.IntakePivotState.TRANSFER, Intake.IntakeMotorState.HOLD, 0, true),
+                                new WaitCommand(300),
+
+                                new SetAuto(robot,DepositPivotState.TRANSFER,0,true).withTimeout(300),
+                                new WaitCommand(500),
+                                new InstantCommand(() -> robot.deposit.setClawOpen(false))
+                        )
+                )
+        );
+
+
+        operator.getGamepadButton(GamepadKeys.Button.DPAD_UP).whenPressed(
+                new UninterruptibleCommand(
+                        new SetAuto(robot, DepositPivotState.SCORING, HIGH_BUCKET_HEIGHT, false).withTimeout(1500)
+                )
+        );
+        driver.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
+                new SequentialCommandGroup(
+                        new InstantCommand(() -> robot.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER)),
+                        new InstantCommand(() -> robot.rightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER))
+                )
+        );
+
+
+        operator.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(
+                new UninterruptibleCommand(
+                        new SetDeposit(robot, DepositPivotState.MIDDLE_HOLD, 0, true).withTimeout(1500)
+                )
+        );
+
+        operator.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(
+                new ConditionalCommand(
+                        new SetAuto(robot, DepositPivotState.SCORING, LOW_BUCKET_HEIGHT, false).withTimeout(1500),
+                        new SequentialCommandGroup(
+                                new InstantCommand(() -> robot.deposit.setClawOpen(true)),
+                                new WaitCommand(300),
+                                new SetDeposit(robot, DepositPivotState.MIDDLE_HOLD, 0, true).withTimeout(1500)
+                        ),
+                        () -> robot.deposit.target == 0
+                )
+        );
+
+        operator.getGamepadButton(GamepadKeys.Button.DPAD_DOWN).whenPressed(
+                new ParallelCommandGroup(
+                        new SetIntake(robot, Intake.IntakePivotState.TRANSFER, Intake.IntakeMotorState.HOLD, 0, false),
+
+                        new SetAuto(robot,DepositPivotState.TRANSFER,0,false).withTimeout(300)
                 )
         );
 
@@ -126,22 +183,43 @@ public class SoloTeleOp extends CommandOpMode {
                         () -> Drive.subPusherState.equals(Drive.SubPusherState.IN))
         );
 
-        driver.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(
-                new ConditionalCommand(
-                        new SetDeposit(robot, DepositPivotState.SCORING, HIGH_BUCKET_HEIGHT, false).withTimeout(1500),
+//        driver.getGamepadButton(GamepadKeys.Button.LEFT_BUMPER).whenPressed(
+//                new ConditionalCommand(
+//                        new SetDeposit(robot, DepositPivotState.SCORING, HIGH_BUCKET_HEIGHT, false).withTimeout(1500),
+//                        new SequentialCommandGroup(
+//                                new InstantCommand(() -> robot.deposit.setClawOpen(true)),
+//                                new WaitCommand(300),
+//                                new SetDeposit(robot, DepositPivotState.MIDDLE_HOLD, 0, true).withTimeout(1500)
+//                        ),
+//                        () -> robot.deposit.target == 0
+//                )
+//        );
+
+//        driver.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(
+//                new InstantCommand(() -> robot.intake.setPivot(IntakePivotState.INTAKE))
+//        );
+
+        driver.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(
+                new UninterruptibleCommand(
                         new SequentialCommandGroup(
-                                new InstantCommand(() -> robot.deposit.setClawOpen(true)),
-                                new WaitCommand(300),
-                                new SetDeposit(robot, DepositPivotState.MIDDLE_HOLD, 0, true).withTimeout(1500)
-                        ),
-                        () -> robot.deposit.target == 0
+                                new UndoTransfer(robot),
+                                new SetIntake(robot, IntakePivotState.INTAKE, IntakeMotorState.REVERSE, 0, true)
+                        )
                 )
         );
 
-        driver.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(
-                new InstantCommand(() -> robot.intake.setPivot(IntakePivotState.INTAKE))
-        );
+        driver.getGamepadButton(GamepadKeys.Button.TRIANGLE).whenPressed(
+                new UninterruptibleCommand(
+                        new SequentialCommandGroup(
+                        new SetIntake(robot, Intake.IntakePivotState.TRANSFER, Intake.IntakeMotorState.HOLD, 0, true),
+                                new WaitCommand(300),
 
+                                new SetAuto(robot,DepositPivotState.TRANSFER,0,true).withTimeout(300),
+                                new WaitCommand(500),
+                                 new InstantCommand(() -> robot.deposit.setClawOpen(false))
+                        )
+                )
+        );
         driver.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON).whenPressed(
                 new UninterruptibleCommand(
                         new SequentialCommandGroup(
@@ -150,28 +228,34 @@ public class SoloTeleOp extends CommandOpMode {
                         )
                 )
         );
-
-        driver.getGamepadButton(GamepadKeys.Button.RIGHT_STICK_BUTTON).whenPressed(
+        driver.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
                 new UninterruptibleCommand(
-                        new RealTransfer(robot)
+                        new SequentialCommandGroup(
+                                new ParallelCommandGroup(
+                                        new SetAuto(robot, DepositPivotState.TRANSFER, 0, false)
+//                                        new SetIntake(robot, Intake.IntakePivotState.TRANSFER, Intake.IntakeMotorState.HOLD, 0, false)
+                                )
+//                                new ServoOnlyTransfer(robot)
+                        )
                 )
         );
 
-        driver.getGamepadButton(GamepadKeys.Button.PS).whenPressed(
-                new ConditionalCommand(
-                        new SequentialCommandGroup(
-                                new InstantCommand(() -> robot.drive.setHang(Drive.HangState.EXTEND)),
-                                new WaitCommand(3000),
-                                new InstantCommand(() -> robot.drive.setHang(Drive.HangState.STOP)),
-                                new InstantCommand(() -> endgame = true)
-                        ),
-                        new SequentialCommandGroup(
-                                new InstantCommand(() -> robot.drive.setHang(Drive.HangState.RETRACT)),
-                                new SetDeposit(robot, DepositPivotState.INSIDE, ENDGAME_ASCENT_HEIGHT, false)
-                        ),
-                        (() -> !endgame)
-                )
-        );
+
+//        driver.getGamepadButton(GamepadKeys.Button.PS).whenPressed(
+//                new ConditionalCommand(
+//                        new SequentialCommandGroup(
+//                                new InstantCommand(() -> robot.drive.setHang(Drive.HangState.EXTEND)),
+//                                new WaitCommand(3000),
+//                                new InstantCommand(() -> robot.drive.setHang(Drive.HangState.STOP)),
+//                                new InstantCommand(() -> endgame = true)
+//                        ),
+//                        new SequentialCommandGroup(
+//                                new InstantCommand(() -> robot.drive.setHang(Drive.HangState.RETRACT)),
+//                                new SetDeposit(robot, DepositPivotState.INSIDE, ENDGAME_ASCENT_HEIGHT, false)
+//                        ),
+//                        (() -> !endgame)
+//                )
+//        );
 
         // Operator Gamepad controls
         operator.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
@@ -335,8 +419,8 @@ public class SoloTeleOp extends CommandOpMode {
         }
 
         // Pinpoint Field Centric Code
-        double speedMultiplier = 0.35 + (1 - 0.35) * gamepad1.left_trigger;
-        robot.follower.setTeleOpMovementVectors(-gamepad1.left_stick_y * speedMultiplier, -gamepad1.left_stick_x * speedMultiplier, -gamepad1.right_stick_x * speedMultiplier * 0.50, false);
+        double speedMultiplier = 0.45 + (1 - 0.35) * gamepad1.left_trigger;
+        robot.follower.setTeleOpMovementVectors(-gamepad1.left_stick_y * speedMultiplier, -gamepad1.left_stick_x * speedMultiplier, -gamepad1.right_stick_x * speedMultiplier , true);
         robot.follower.update();
 
         // Manual control of extendo
