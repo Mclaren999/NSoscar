@@ -5,11 +5,11 @@ import static org.firstinspires.ftc.teamcode.commandbase.Deposit.*;
 import static org.firstinspires.ftc.teamcode.commandbase.Intake.*;
 
 import com.pedropathing.localization.Pose;
+import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
 import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
-import com.seattlesolvers.solverslib.command.Command;
 import com.seattlesolvers.solverslib.command.RunCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.WaitCommand;
@@ -23,9 +23,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.commandbase.Deposit;
 import org.firstinspires.ftc.teamcode.commandbase.Intake;
+import org.firstinspires.ftc.teamcode.commandbase.commands.SetAuto;
 import org.firstinspires.ftc.teamcode.commandbase.commands.SetDeposit;
 import org.firstinspires.ftc.teamcode.commandbase.commands.SetIntake;
-import org.firstinspires.ftc.teamcode.commandbase.commands.SetAuto;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
 import org.firstinspires.ftc.teamcode.hardware.TelemetryData;
 
@@ -58,34 +58,18 @@ public class TestReIntakeTeleOp extends CommandOpMode {
         robot.follower.setStartingPose(new Pose(0, 105.125, Math.toRadians(270)));
 
         // Button bindings for testing
-        driver.getGamepadButton(GamepadKeys.Button.CIRCLE).whenPressed(
+        driver.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
                 new SequentialCommandGroup(
                         new InstantCommand(() -> telemetry.addData("Test", "Starting intakeSampleCycleHalf")),
                         intakeSampleCycleHalf(0, 370) // Simulate intake and transfer
                 )
         );
 
-        driver.getGamepadButton(GamepadKeys.Button.CROSS).whenPressed(
+        driver.getGamepadButton(GamepadKeys.Button.DPAD_DOWN).whenPressed(
                 new SequentialCommandGroup(
-                        new InstantCommand(() -> telemetry.addData("Test", "Starting scoreSampleCycleHalf")),
-                        scoreSampleCycleHalf(0) // Simulate scoring with ReIntake check
+                        new InstantCommand(() -> telemetry.addData("Test", "Starting transferAndCheck")),
+                        transferAndCheck() // Perform transfer, check, and move to MIDDLE_HOLD
                 )
-        );
-
-        driver.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
-                new SequentialCommandGroup(
-                        new InstantCommand(() -> telemetry.addData("Test", "Starting checkTransferAndRetry")),
-                        checkTransferAndRetry() // Test ReIntake logic independently
-                )
-        );
-
-        driver.getGamepadButton(GamepadKeys.Button.TRIANGLE).whenPressed(
-                new InstantCommand(() -> robot.intake.setActiveIntake(IntakeMotorState.STOP)) // Stop intake for manual control
-        );
-
-        // Manual deposit control for setup
-        driver.getGamepadButton(GamepadKeys.Button.DPAD_UP).whenPressed(
-                new SetDeposit(robot, DepositPivotState.MIDDLE_HOLD, 0, true).withTimeout(600)
         );
 
         super.run();
@@ -106,7 +90,6 @@ public class TestReIntakeTeleOp extends CommandOpMode {
 
         return new SequentialCommandGroup(
                 new ParallelCommandGroup(
-                        // Mock path following with a wait to simulate movement
                         new WaitCommand(500), // Simulate path following delay
                         new SetIntake(robot, Intake.IntakePivotState.INTAKE, IntakeMotorState.FORWARD, 120, true),
                         new SequentialCommandGroup(
@@ -162,7 +145,7 @@ public class TestReIntakeTeleOp extends CommandOpMode {
                                 new InstantCommand(() -> robot.deposit.setClawOpen(false)),
                                 new WaitCommand(CLAW_CLOSE), // Time for claw to close and sample to settle
                                 new SetDeposit(robot, DepositPivotState.MIDDLE_HOLD, 0, false)
-                                .withTimeout(DEPOSIT_TO_REACH_TRANSFER) // Time to reach TRANSFER
+                                        .withTimeout(DEPOSIT_TO_REACH_TRANSFER) // Time to reach MIDDLE_HOLD
                         );
                         reIntakeSequence.execute();
                         while (!reIntakeSequence.isFinished()) {
@@ -179,11 +162,33 @@ public class TestReIntakeTeleOp extends CommandOpMode {
                                 new SetIntake(robot, Intake.IntakePivotState.INTAKE, IntakeMotorState.REVERSE, 0, false)
                                         .withTimeout(EJECT_SAMPLE), // Time to eject stuck sample
                                 new WaitCommand(POST_EJECT), // Time for sample to clear intake
-                                new InstantCommand(() -> telemetry.addData("ReIntake Error", "Sample stuck after retries"))
+                                new InstantCommand(() -> telemetry.addData("ReIntake Error", "Sample stuck after retries")),
+                                new SetDeposit(robot, DepositPivotState.MIDDLE_HOLD, 0, false)
+                                        .withTimeout(DEPOSIT_TO_REACH_TRANSFER) // Ensure MIDDLE_HOLD after ejection
                         ),
-                        new InstantCommand(() -> {}),
+                        new SetDeposit(robot, DepositPivotState.MIDDLE_HOLD, 0, false)
+                                .withTimeout(DEPOSIT_TO_REACH_TRANSFER), // Ensure MIDDLE_HOLD if no ejection
                         robot.intake::hasSample
                 )
+        );
+    }
+
+    private SequentialCommandGroup transferAndCheck() {
+        // Timing variables (in milliseconds)
+        final int INTAKE_TO_REACH_TRANSFER = 400;
+        final int DEPOSIT_TO_REACH_TRANSFER = 300;
+        final int DEPOSIT_STABILIZE = 200;
+        final int CLAW_CLOSE = 300;
+
+        return new SequentialCommandGroup(
+                new SetIntake(robot, Intake.IntakePivotState.TRANSFER, IntakeMotorState.HOLD, 0, true),
+                new WaitCommand(INTAKE_TO_REACH_TRANSFER), // Time to reach TRANSFER position
+                new SetDeposit(robot, Deposit.DepositPivotState.TRANSFER, 0, true)
+                        .withTimeout(DEPOSIT_TO_REACH_TRANSFER), // Time to reach TRANSFER
+                new WaitCommand(DEPOSIT_STABILIZE), // Time for deposit to stabilize
+                new InstantCommand(() -> robot.deposit.setClawOpen(false)),
+                new WaitCommand(CLAW_CLOSE), // Time for claw to close and sample to settle
+                checkTransferAndRetry() // Check transfer and retry if needed
         );
     }
 
@@ -199,7 +204,6 @@ public class TestReIntakeTeleOp extends CommandOpMode {
                         new SetAuto(robot, Deposit.DepositPivotState.SCORING, HIGH_BUCKET_HEIGHT, false)
                                 .withTimeout(DEPOSIT_TO_REACH_SCORING) // Time to reach SCORING and extend slides
                 ),
-                // Mock path following with a wait to simulate movement
                 new WaitCommand(500), // Simulate path following delay
                 new WaitCommand(PRE_SCORE_STABILIZE), // Time to stabilize before opening claw
                 new InstantCommand(() -> robot.deposit.setClawOpen(true)),
