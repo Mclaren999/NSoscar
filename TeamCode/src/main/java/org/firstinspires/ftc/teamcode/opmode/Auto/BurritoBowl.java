@@ -208,52 +208,48 @@ public class BurritoBowl extends CommandOpMode {
 
     private SequentialCommandGroup intakeSampleCycleHalf(int pathNum, int extendoTarget) {
         return new SequentialCommandGroup(
+                // Move to intake position while following path and preparing deposit
                 new ParallelCommandGroup(
                         new FollowPathCommand(robot.follower, paths.get(pathNum)).setHoldEnd(true),
-                        new SetIntake(robot, Intake.IntakePivotState.INTAKE, IntakeMotorState.FORWARD, 120, true),
+                        new SetIntake(robot, Intake.IntakePivotState.INTAKE, Intake.IntakeMotorState.FORWARD, 120, true),
                         new SequentialCommandGroup(
+                                // Delay 200ms to sync deposit adjustment with path following
                                 new WaitCommand(200),
-                                new SetDeposit(robot, Deposit.DepositPivotState.MIDDLE_HOLD, 0, true).withTimeout(600).beforeStarting(new WaitCommand(150))
+                                // Move deposit to MIDDLE_HOLD, delayed 150ms to avoid motor conflicts
+                                new SetDeposit(robot, Deposit.DepositPivotState.MIDDLE_HOLD, 0, true)
+                                        .withTimeout(600)
+                                        .beforeStarting(new WaitCommand(150))
                         )
-
-
                 ),
 
+                // Extend intake to target position
                 new SetIntake(robot, Intake.IntakePivotState.INTAKE, Intake.IntakeMotorState.FORWARD, extendoTarget, true),
 
+                // Wait up to 1000ms for sample detection
                 new ParallelRaceGroup(
                         new WaitUntilCommand(robot.intake::hasSample)
-//                        ,
-//                        new SequentialCommandGroup(
-//                                new FollowPathCommand(robot.follower, robot.jiggle(5)),
-//                                new FollowPathCommand(robot.follower, robot.jiggle(5))
-//                        )
                 ).withTimeout(1000),
 
-                // Allow sample to enter intake fully
+                // Allow 100ms for sample to fully enter intake
                 new WaitCommand(100),
-                new InstantCommand(() -> robot.intake.setActiveIntake(IntakeMotorState.HOLD)),
-                // Allow tubing to hold onto sample
-                new WaitCommand(100),
-                new ParallelCommandGroup(
-                        new SequentialCommandGroup(
-                                new WaitCommand(150),
-                                new InstantCommand(() -> robot.intake.setActiveIntake(IntakeMotorState.FORWARD))
-                        ),
-                        new SetIntake(robot, Intake.IntakePivotState.TRANSFER, Intake.IntakeMotorState.HOLD, 0, true)
-                ),
-                new InstantCommand(() -> robot.intake.setActiveIntake(IntakeMotorState.HOLD)),
+                new InstantCommand(() -> robot.intake.setActiveIntake(Intake.IntakeMotorState.HOLD)),
 
+                // Move intake to TRANSFER position, holding sample
+                new SetIntake(robot, Intake.IntakePivotState.TRANSFER, Intake.IntakeMotorState.HOLD, 0, true),
+                new InstantCommand(() -> robot.intake.setActiveIntake(Intake.IntakeMotorState.HOLD)),
+
+                // Stabilize intake for 100ms after transfer setup
                 new WaitCommand(100),
 
-                new SetDeposit(robot,DepositPivotState.TRANSFER,0,true).withTimeout(300),
+                // Move deposit to TRANSFER position
+                new SetDeposit(robot, Deposit.DepositPivotState.TRANSFER, 0, true).withTimeout(300),
+
+                // Wait 80ms to ensure deposit is aligned before closing claw
                 new WaitCommand(80),
                 new InstantCommand(() -> robot.deposit.setClawOpen(false)),
+
+                // Wait 100ms to secure sample in claw before proceeding
                 new WaitCommand(100)
-
-
-
-
         );
     }
 
@@ -320,7 +316,6 @@ public class BurritoBowl extends CommandOpMode {
                 new InstantCommand(() -> robot.deposit.setClawOpen(false))
         );
     }
-
     private SequentialCommandGroup scoreSampleCycleHalf(int pathNum) {
         return new SequentialCommandGroup(
                 new SetAuto(robot, Deposit.DepositPivotState.SCORING, HIGH_BUCKET_HEIGHT, false).withTimeout(1000),
