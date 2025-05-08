@@ -102,9 +102,9 @@ public class Globals {
     public static double WRIST_BACK_SPECIMEN_SCORING = 0.7;
     public static double WRIST_FRONT_SPECIMEN_INTAKE = 0.5;//
     public static double WRIST_BACK_SPECIMEN_INTAKE = 0.2;
-    public static double WRIST_TRANSFER = 0.06;
-    public static double WRIST_MIDDLE_HOLD = 0.06;
-    public static double WRIST_READY_TRANSFER = 0.06;
+    public static double WRIST_TRANSFER = 0.075;
+    public static double WRIST_MIDDLE_HOLD = 0.075;
+    public static double WRIST_READY_TRANSFER = 0.075;
 
     public static double WRIST_INSIDE = 0.4;
 
