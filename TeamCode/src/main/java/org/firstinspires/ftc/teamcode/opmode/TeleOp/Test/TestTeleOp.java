@@ -20,13 +20,16 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.seattlesolvers.solverslib.command.CommandOpMode;
-import com.seattlesolvers.solverslib.command.ConditionalCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.UninterruptibleCommand;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.gamepad.GamepadEx;
 import com.seattlesolvers.solverslib.gamepad.GamepadKeys;
+import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
+import com.pedropathing.pathgen.BezierLine;
+import com.pedropathing.pathgen.PathChain;
+import com.pedropathing.pathgen.Point;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.commandbase.Deposit;
@@ -40,56 +43,32 @@ import org.firstinspires.ftc.teamcode.hardware.TelemetryData;
 @TeleOp(name = "ATestTeleOp")
 public class TestTeleOp extends CommandOpMode {
     public GamepadEx driver;
-    public GamepadEx operator;
-
     public ElapsedTime timer;
     public ElapsedTime gameTimer;
-
     TelemetryData telemetryData = new TelemetryData(telemetry);
-
     private final Robot robot = Robot.getInstance();
-
     private boolean sampleDetected = false;
     private boolean transferTriggered = false;
     private boolean transferSuccessful = false;
 
-    // Refactored transfer and scoring sequence using RealTransfer
     private SequentialCommandGroup getTransferAndScoreCommand() {
         return new SequentialCommandGroup(
-                // Ensure claw is closed before transfer
-                new InstantCommand(() -> robot.deposit.setClawOpen(false)),
-                // Transfer using RealTransfer
+                // Transfer sample
                 new RealTransfer(robot),
                 new WaitCommand(200),
-                // Scoring with failsafe, keeping claw closed during movement
-                new SequentialCommandGroup(
-                        new InstantCommand(() -> robot.deposit.setClawOpen(false)),
-                        new SetDeposit(robot, DepositPivotState.SCORING, HIGH_BUCKET_HEIGHT, true).withTimeout(2000),
-                        new WaitCommand(200),
-                        new ConditionalCommand(
-                                new SequentialCommandGroup(
-                                        new SetIntake(robot, IntakePivotState.INTAKE_READY, IntakeMotorState.STOP, 0, true),
-                                        new SetDeposit(robot, DepositPivotState.MIDDLE_HOLD, 0, true).withTimeout(2000),
-                                        new InstantCommand(() -> {
-                                            transferSuccessful = false;
-                                            sampleDetected = false;
-                                            transferTriggered = false;
-                                            telemetryData.addData("Transfer Failsafe", "Sample still detected, reverting to INTAKE");
-                                        })
-                                ),
-                                new SequentialCommandGroup(
-                                        new SetIntake(robot, IntakePivotState.INTAKE_READY, IntakeMotorState.STOP, 0, true),
-                                        new SetDeposit(robot, DepositPivotState.MIDDLE_HOLD, 0, true).withTimeout(2000),
-                                        new InstantCommand(() -> {
-                                            transferSuccessful = true;
-                                            sampleDetected = false;
-                                            transferTriggered = false;
-                                            telemetryData.addData("Transfer Success", "Sample transferred, ready for next cycle");
-                                        })
-                                ),
-                                () -> robot.intake.hasSample()
-                        )
-                )
+                // Score sample
+                new SetDeposit(robot, DepositPivotState.SCORING, HIGH_BUCKET_HEIGHT, true).withTimeout(1500),
+                new WaitCommand(200),
+                // Revert to neutral state and reset
+                new SetIntake(robot, IntakePivotState.INTAKE_READY, IntakeMotorState.STOP, 0, true),
+                new SetDeposit(robot, DepositPivotState.MIDDLE_HOLD, 0, true).withTimeout(1500),
+                new InstantCommand(() -> {
+                    transferSuccessful = !robot.intake.hasSample();
+                    sampleDetected = false;
+                    transferTriggered = false;
+                    robot.intake.resetSampleDetection();
+                    telemetryData.addData("Transfer Result", transferSuccessful ? "Success: Sample transferred" : "Failsafe: Sample still detected");
+                })
         );
     }
 
@@ -106,10 +85,27 @@ public class TestTeleOp extends CommandOpMode {
         robot.intake.setActiveIntake(IntakeMotorState.STOP);
 
         driver = new GamepadEx(gamepad1);
-        operator = new GamepadEx(gamepad2);
 
         // Driver Gamepad controls
         driver.getGamepadButton(GamepadKeys.Button.CROSS).whenPressed(
+                new UninterruptibleCommand(
+                        new FollowPathCommand(
+                                robot.follower,
+                                robot.follower.pathBuilder()
+                                        .addPath(
+                                                new BezierLine(
+                                                        new Point(robot.follower.getPose().getX(), robot.follower.getPose().getY(), Point.CARTESIAN),
+                                                        new Point(13, 127.1, Point.CARTESIAN)
+                                                )
+                                        )
+                                        .setLinearHeadingInterpolation(Math.toRadians(-90), Math.toRadians(270))
+                                        .setReversed(true)
+                                        .build()
+                        ).setHoldEnd(true)
+                )
+        );
+
+        driver.getGamepadButton(GamepadKeys.Button.DPAD_DOWN).whenPressed(
                 new SequentialCommandGroup(
                         new SetIntake(robot, IntakePivotState.INTAKE, IntakeMotorState.FORWARD, MAX_EXTENDO_EXTENSION, true),
                         new InstantCommand(() -> {
@@ -119,14 +115,13 @@ public class TestTeleOp extends CommandOpMode {
                 )
         );
 
-        driver.getGamepadButton(GamepadKeys.Button.CIRCLE).whenPressed(
+        driver.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(
                 new SequentialCommandGroup(
                         new SetIntake(robot, IntakePivotState.INTAKE_READY, IntakeMotorState.STOP, 0, true),
                         new InstantCommand(() -> {
                             sampleDetected = false;
                             transferTriggered = false;
                             transferSuccessful = false;
-                            // Workaround to reset sensor state
                             robot.intake.resetSampleDetection();
                             telemetryData.addData("Intake Reset", "Ready for new sample");
                         })
@@ -150,14 +145,7 @@ public class TestTeleOp extends CommandOpMode {
                 )
         );
 
-        // Operator Gamepad controls
-        operator.getGamepadButton(GamepadKeys.Button.CIRCLE).whenPressed(
-                new UninterruptibleCommand(
-                        getTransferAndScoreCommand()
-                )
-        );
-
-        operator.getGamepadButton(GamepadKeys.Button.RIGHT_BUMPER).whenPressed(
+        driver.getGamepadButton(GamepadKeys.Button.DPAD_UP).whenPressed(
                 new UninterruptibleCommand(
                         new SequentialCommandGroup(
                                 new InstantCommand(() -> robot.deposit.setClawOpen(true)),
@@ -180,7 +168,6 @@ public class TestTeleOp extends CommandOpMode {
             gameTimer = new ElapsedTime();
         }
 
-        // Automatic transfer trigger on sample detection
         if (robot.intake.hasSample() && !sampleDetected && !transferTriggered) {
             sampleDetected = true;
             transferTriggered = true;
@@ -212,7 +199,6 @@ public class TestTeleOp extends CommandOpMode {
 
         super.run();
 
-        // Enhanced telemetry with current operations at the top
         String currentOperation = "Idle";
         String operationDetail = "None";
         if (intakePivotState == IntakePivotState.INTAKE && intakeMotorState == IntakeMotorState.FORWARD) {
@@ -256,7 +242,6 @@ public class TestTeleOp extends CommandOpMode {
         telemetryData.addData("intakePivotState", intakePivotState);
         telemetryData.addData("depositPivotState", depositPivotState);
         telemetryData.addData("Sigma", "Oscar");
-
         telemetryData.update();
         timer.reset();
         robot.ControlHub.clearBulkCache();
