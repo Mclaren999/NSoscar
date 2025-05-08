@@ -25,6 +25,9 @@ import static org.firstinspires.ftc.teamcode.hardware.Globals.opModeType;
 import android.transition.Slide;
 
 import com.pedropathing.localization.Pose;
+import com.pedropathing.pathgen.BezierCurve;
+import com.pedropathing.pathgen.BezierLine;
+import com.pedropathing.pathgen.Point;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -34,6 +37,7 @@ import com.seattlesolvers.solverslib.command.CommandOpMode;
 import com.seattlesolvers.solverslib.command.ConditionalCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
+import com.seattlesolvers.solverslib.command.RepeatCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.UninterruptibleCommand;
 import com.seattlesolvers.solverslib.command.WaitCommand;
@@ -44,6 +48,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.commandbase.Deposit;
 import org.firstinspires.ftc.teamcode.commandbase.Drive;
 import org.firstinspires.ftc.teamcode.commandbase.Intake;
+import org.firstinspires.ftc.teamcode.commandbase.commands.FollowPathCommand;
 import org.firstinspires.ftc.teamcode.commandbase.commands.RealTransfer;
 import org.firstinspires.ftc.teamcode.commandbase.commands.ServoOnlyTransfer;
 import org.firstinspires.ftc.teamcode.commandbase.commands.SetAuto;
@@ -121,7 +126,7 @@ public class SoloTeleOp extends CommandOpMode {
         operator.getGamepadButton(GamepadKeys.Button.CROSS).whenPressed(
                 new UninterruptibleCommand(
                         new SequentialCommandGroup(
-                                new SetIntake(robot, Intake.IntakePivotState.TRANSFER, Intake.IntakeMotorState.HOLD, 0, true),
+                                new SetIntake(robot, IntakePivotState.TRANSFER, IntakeMotorState.HOLD, 0, true),
                                 new WaitCommand(300),
 
                                 new SetAuto(robot,DepositPivotState.TRANSFER,0,true).withTimeout(300),
@@ -165,7 +170,7 @@ public class SoloTeleOp extends CommandOpMode {
 
         operator.getGamepadButton(GamepadKeys.Button.DPAD_DOWN).whenPressed(
                 new ParallelCommandGroup(
-                        new SetIntake(robot, Intake.IntakePivotState.TRANSFER, Intake.IntakeMotorState.HOLD, 0, false),
+                        new SetIntake(robot, IntakePivotState.TRANSFER, IntakeMotorState.HOLD, 0, false),
 
                         new SetAuto(robot,DepositPivotState.TRANSFER,0,false).withTimeout(300)
                 )
@@ -211,11 +216,11 @@ public class SoloTeleOp extends CommandOpMode {
         driver.getGamepadButton(GamepadKeys.Button.TRIANGLE).whenPressed(
                 new UninterruptibleCommand(
                         new SequentialCommandGroup(
-                        new SetIntake(robot, Intake.IntakePivotState.TRANSFER, Intake.IntakeMotorState.HOLD, 0, true),
+                        new SetIntake(robot, IntakePivotState.TRANSFER, IntakeMotorState.HOLD, 0, true),
                                 new WaitCommand(300),
 
-                                new SetAuto(robot,DepositPivotState.TRANSFER,0,true).withTimeout(300),
-                                new WaitCommand(500),
+                                new SetDeposit(robot,DepositPivotState.TRANSFER,0,true).withTimeout(200),
+//                                new WaitCommand(300),
                                  new InstantCommand(() -> robot.deposit.setClawOpen(false))
                         )
                 )
@@ -296,13 +301,13 @@ public class SoloTeleOp extends CommandOpMode {
 
         operator.getGamepadButton(GamepadKeys.Button.DPAD_UP).whenPressed(
                 new UninterruptibleCommand(
-                        new SetDeposit(robot, DepositPivotState.SCORING, HIGH_BUCKET_HEIGHT, false).withTimeout(1500)
+                        new SetDeposit(robot, DepositPivotState.SCORING, HIGH_BUCKET_HEIGHT, false).withTimeout(500)
                 )
         );
 
         operator.getGamepadButton(GamepadKeys.Button.DPAD_DOWN).whenPressed(
                 new UninterruptibleCommand(
-                        new SetDeposit(robot, DepositPivotState.SCORING, LOW_BUCKET_HEIGHT, false).withTimeout(1500)
+                        new SetDeposit(robot, DepositPivotState.SCORING, LOW_BUCKET_HEIGHT, false).withTimeout(600 )
                 )
         );
 
@@ -392,6 +397,29 @@ public class SoloTeleOp extends CommandOpMode {
     public void run() {
         // Keep all the has movement init for until when TeleOp starts
         // This is like the init but when the program is actually started
+        new UninterruptibleCommand(
+                new RepeatCommand(
+                        new SequentialCommandGroup(
+                                new InstantCommand(() -> robot.follower.setStartingPose(new Pose(6.25, 30, Math.toRadians(180)))),
+                                new FollowPathCommand(robot.follower,
+                                        robot.follower.pathBuilder()
+                                                .addPath(
+                                                        new BezierCurve(
+                                                                new Point(robot.follower.getPose().getX(), robot.follower.getPose().getY(), Point.CARTESIAN),
+                                                                new Point(6.25, 30, Point.CARTESIAN),
+                                                                new Point(63.706, 117.899, Point.CARTESIAN),
+                                                                new Point(62.157, 100, Point.CARTESIAN)
+                                                        )
+                                                )
+                                                .setConstantHeadingInterpolation(Math.toRadians(0)).build(),
+                                        true
+                                )
+                        ))
+        ).andThen(
+                new InstantCommand(() -> robot.follower.startTeleopDrive())
+
+        );
+        super.run();
         if (timer == null) {
             robot.initHasMovement();
 
@@ -419,8 +447,8 @@ public class SoloTeleOp extends CommandOpMode {
         }
 
         // Pinpoint Field Centric Code
-        double speedMultiplier = 0.45 + (1 - 0.35) * gamepad1.left_trigger;
-        robot.follower.setTeleOpMovementVectors(-gamepad1.left_stick_y * speedMultiplier, -gamepad1.left_stick_x * speedMultiplier, -gamepad1.right_stick_x * speedMultiplier , true);
+        double speedMultiplier = 0.35 + (1 - 0.35) * gamepad1.left_trigger;
+        robot.follower.setTeleOpMovementVectors(-gamepad1.left_stick_y * speedMultiplier, -gamepad1.left_stick_x * speedMultiplier, -gamepad1.right_stick_x * speedMultiplier , false);
         robot.follower.update();
 
         // Manual control of extendo
@@ -449,9 +477,9 @@ public class SoloTeleOp extends CommandOpMode {
 
         telemetryData.addData("hasSample()", robot.intake.hasSample());
         telemetryData.addData("colorSensor getDistance", robot.colorSensor.getDistance(DistanceUnit.CM));
-        telemetryData.addData("Intake sampleColor", Intake.sampleColor);
+        telemetryData.addData("Intake sampleColor", sampleColor);
         telemetryData.addData("correctSampleDetected", Intake.correctSampleDetected());
-        telemetryData.addData("intakeMotorState", Intake.intakeMotorState);
+        telemetryData.addData("intakeMotorState", intakeMotorState);
 
         telemetryData.addData("liftTop.getPower()", robot.liftTop.getPower());
         telemetryData.addData("liftBottom.getPower()", robot.liftBottom.getPower());

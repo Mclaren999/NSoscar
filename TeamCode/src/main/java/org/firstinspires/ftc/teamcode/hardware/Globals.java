@@ -72,7 +72,7 @@ public class Globals {
     public static double MAX_EXTENDO_EXTENSION = 350;
 
     // Deposit Pivot
-    public static double DEPOSIT_PIVOT_TRANSFER_POS = 0.86 ;
+    public static double DEPOSIT_PIVOT_TRANSFER_POS = 0.83 ;
     public static double DEPOSIT_PIVOT_READY_TRANSFER_POS = 0.9;
     public static double DEPOSIT_PIVOT_MIDDLE_POS = 0.7;
     public static double DEPOSIT_PIVOT_AUTO_BAR_POS = 0.35;
@@ -91,7 +91,7 @@ public class Globals {
 
     // Deposit Claw
     public static double DEPOSIT_CLAW_OPEN_POS = 0.45;
-    public static double DEPOSIT_CLAW_CLOSE_POS = 0.9;
+    public static double DEPOSIT_CLAW_CLOSE_POS = 0.86;
     public static double DEPOSIT_CLAW_AAA_POS = 0.4;
 
 
@@ -102,9 +102,9 @@ public class Globals {
     public static double WRIST_BACK_SPECIMEN_SCORING = 0.7;
     public static double WRIST_FRONT_SPECIMEN_INTAKE = 0.5;//
     public static double WRIST_BACK_SPECIMEN_INTAKE = 0.2;
-    public static double WRIST_TRANSFER = 0.1;
-    public static double WRIST_MIDDLE_HOLD = 0.1;
-    public static double WRIST_READY_TRANSFER = 0.1;
+    public static double WRIST_TRANSFER = 0.12;
+    public static double WRIST_MIDDLE_HOLD = 0.12;
+    public static double WRIST_READY_TRANSFER = 0.12;
 
     public static double WRIST_INSIDE = 0.4;
 
