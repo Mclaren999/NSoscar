@@ -127,6 +127,8 @@ public class TestTeleOp extends CommandOpMode {
                             transferTriggered = false;
                             transferSuccessful = false;
                             // Workaround to reset sensor state
+                            robot.intake.resetSampleDetection();
+                            telemetryData.addData("Intake Reset", "Ready for new sample");
                         })
                 )
         );
@@ -141,6 +143,8 @@ public class TestTeleOp extends CommandOpMode {
                                     sampleDetected = false;
                                     transferTriggered = false;
                                     transferSuccessful = false;
+                                    robot.intake.resetSampleDetection();
+                                    telemetryData.addData("Eject Reset", "Intake cleared, ready for new sample");
                                 })
                         )
                 )
