@@ -51,7 +51,7 @@ public class Globals {
 
     // Intake Color Sensor
     public static double MIN_DISTANCE_THRESHOLD = 1.5;
-    public static double MAX_DISTANCE_THRESHOLD = 2.6;
+    public static double MAX_DISTANCE_THRESHOLD = 3.7;
     public static int YELLOW_THRESHOLD = 800;
     public static int RED_THRESHOLD = 0;
     public static int BLUE_THRESHOLD = 0;
@@ -61,7 +61,7 @@ public class Globals {
     public static int BLUE_EDGE_CASE_THRESHOLD = 675;
 
     // Intake Pivot
-    public static double INTAKE_PIVOT_TRANSFER_POS = 0.33;
+    public static double INTAKE_PIVOT_TRANSFER_POS = 0.37;
     public static double INTAKE_PIVOT_READY_TRANSFER_POS = 0.25;
     public static double INTAKE_PIVOT_INSIDE_POS = 0.25;
     public static double INTAKE_PIVOT_INTAKE_POS = 0.84;
@@ -72,7 +72,7 @@ public class Globals {
     public static double MAX_EXTENDO_EXTENSION = 350;
 
     // Deposit Pivot
-    public static double DEPOSIT_PIVOT_TRANSFER_POS = 0.83 ;
+    public static double DEPOSIT_PIVOT_TRANSFER_POS = 0.85 ;
     public static double DEPOSIT_PIVOT_READY_TRANSFER_POS = 0.9;
     public static double DEPOSIT_PIVOT_MIDDLE_POS = 0.7;
     public static double DEPOSIT_PIVOT_AUTO_BAR_POS = 0.35;
@@ -102,9 +102,9 @@ public class Globals {
     public static double WRIST_BACK_SPECIMEN_SCORING = 0.7;
     public static double WRIST_FRONT_SPECIMEN_INTAKE = 0.5;//
     public static double WRIST_BACK_SPECIMEN_INTAKE = 0.2;
-    public static double WRIST_TRANSFER = 0.12;
-    public static double WRIST_MIDDLE_HOLD = 0.12;
-    public static double WRIST_READY_TRANSFER = 0.12;
+    public static double WRIST_TRANSFER = 0.06;
+    public static double WRIST_MIDDLE_HOLD = 0.06;
+    public static double WRIST_READY_TRANSFER = 0.06;
 
     public static double WRIST_INSIDE = 0.4;
 

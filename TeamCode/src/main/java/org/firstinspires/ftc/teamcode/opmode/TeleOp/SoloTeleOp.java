@@ -220,7 +220,7 @@ public class SoloTeleOp extends CommandOpMode {
                                 new WaitCommand(300),
 
                                 new SetDeposit(robot,DepositPivotState.TRANSFER,0,true).withTimeout(200),
-//                                new WaitCommand(300),
+                                new WaitCommand(100),
                                  new InstantCommand(() -> robot.deposit.setClawOpen(false))
                         )
                 )
