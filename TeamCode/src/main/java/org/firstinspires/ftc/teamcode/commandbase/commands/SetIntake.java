@@ -67,8 +67,8 @@ public class SetIntake extends CommandBase {
 
         // Check if extendo has reached target and is retracted (assuming target = 0 is retracted)
         if (robot.intake.extendoReached && target == 0 && !encoderReset) {
-            robot.liftBottom.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            robot.liftBottom.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            //robot.liftTop.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            //robot.liftTop.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             encoderReset = true; // Prevent repeated resets
         }
     }

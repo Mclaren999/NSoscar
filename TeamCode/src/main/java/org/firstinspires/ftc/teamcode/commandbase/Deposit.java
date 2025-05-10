@@ -34,7 +34,8 @@ public class Deposit extends SubsystemBase {
         TRANSFER,
         READY_TRANSFER,
         MIDDLE_HOLD,
-        INSIDE
+        INSIDE,
+        PRESCORE
     }
     public static DepositPivotState depositPivotState;
 
@@ -102,9 +103,9 @@ public class Deposit extends SubsystemBase {
     public void setPivot(DepositPivotState depositPivotState) {
         switch (depositPivotState) {
             case SCORING:
+                robot.depositWrist.setPosition(WRIST_SCORING);
                 robot.leftDepositPivot.setPosition(DEPOSIT_PIVOT_SCORING_POS);
                 robot.rightDepositPivot.setPosition(DEPOSIT_PIVOT_SCORING_POS);
-                robot.depositWrist.setPosition(WRIST_SCORING);
                 break;
             case FRONT_SPECIMEN_SCORING:
                 robot.leftDepositPivot.setPosition(DEPOSIT_PIVOT_SPECIMEN_FRONT_SCORING_POS);
@@ -153,6 +154,12 @@ public class Deposit extends SubsystemBase {
 //                robot.rightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
                 break;
+            case PRESCORE:
+                robot.depositWrist.setPosition(WRIST_SCORING);
+                robot.leftDepositPivot.setPosition(DEPOSIT_PIVOT_PRESCORE_POS);
+                robot.rightDepositPivot.setPosition(DEPOSIT_PIVOT_PRESCORE_POS);
+                break;
+
         }
         Deposit.depositPivotState = depositPivotState;
     }

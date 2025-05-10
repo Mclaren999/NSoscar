@@ -26,7 +26,7 @@ public class ServoOnlyTransfer extends CommandBase {
     @Override
     public void initialize() {
         robot.deposit.setPivot(Deposit.DepositPivotState.MIDDLE_HOLD);
-        robot.deposit.setClawOpen(true);
+        robot.deposit.setClawOpen(false);
 
         timer.reset();
         index = 1;
@@ -36,7 +36,6 @@ public class ServoOnlyTransfer extends CommandBase {
     public void execute() {
         if (index == 1 && timer.milliseconds() > 150) {
             robot.deposit.setPivot(Deposit.DepositPivotState.TRANSFER);
-
             timer.reset();
             index = 2;
         } else if (index == 2 && timer.milliseconds() > 200) {

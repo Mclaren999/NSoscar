@@ -7,6 +7,7 @@ import static org.firstinspires.ftc.teamcode.commandbase.Intake.SampleColorTarge
 import static org.firstinspires.ftc.teamcode.commandbase.Intake.IntakeMotorState.*;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.SubsystemBase;
 import com.seattlesolvers.solverslib.command.WaitCommand;
@@ -136,7 +137,7 @@ public class Intake extends SubsystemBase {
         if (intakeMotorState.equals(HOLD)) {
             robot.intakeMotor.setPower(INTAKE_HOLD_SPEED);
             Intake.intakeMotorState = intakeMotorState;
-        } else if (intakePivotState.equals(INTAKE) || intakePivotState.equals(INTAKE_READY)) {
+        } else if (intakePivotState.equals(INTAKE) || intakePivotState.equals(INTAKE_READY)  || intakePivotState.equals(TRANSFER)) {
             switch (intakeMotorState) {
                 case FORWARD:
                     robot.intakeMotor.setPower(INTAKE_FORWARD_SPEED);
@@ -180,16 +181,22 @@ public class Intake extends SubsystemBase {
                                 setActiveIntake(HOLD);
                                 if (opModeType.equals(OpModeType.TELEOP)) {
                                     if (sampleColorTarget.equals(ANY_COLOR)) {
-                                        if (soloTeleOp) {
-                                            new SequentialCommandGroup(
-                                                    new RealTransfer(robot).beforeStarting(new WaitCommand(125)),
-                                                    new SetDeposit(robot, Deposit.DepositPivotState.SCORING, HIGH_BUCKET_HEIGHT, false)
-                                            ).schedule(false);
-                                        } else {
-                                            new RealTransfer(robot).beforeStarting(
-                                                    new WaitCommand(125)
-                                            ).schedule(false);
-                                        }
+//                                        if (soloTeleOp) {
+//                                            new SequentialCommandGroup(
+//                                                    new RealTransfer(robot).beforeStarting(new WaitCommand(125)),
+//                                                    new SetDeposit(robot, Deposit.DepositPivotState.SCORING, HIGH_BUCKET_HEIGHT, false)
+//                                            ).schedule(false);
+//                                        } else {
+                                        new SequentialCommandGroup(
+                                                new SetDeposit(robot, Deposit.DepositPivotState.MIDDLE_HOLD, 0, true),
+                                                new SetIntake(robot, IntakePivotState.TRANSFER, IntakeMotorState.HOLD, 0, false),
+                                                new WaitCommand(200),
+                                                new SetDeposit(robot, Deposit.DepositPivotState.TRANSFER,0,true),
+                                                new InstantCommand(() -> robot.deposit.setClawOpen(false)),
+                                                new WaitCommand(100),
+                                                new SetDeposit(robot, Deposit.DepositPivotState.MIDDLE_HOLD, 0, false).withTimeout(200)
+                                        ).schedule(false);
+//                                        }
                                     } else {
                                         new SetIntake(robot, INSIDE, HOLD, 0, false).schedule(false);
                                     }
