@@ -169,16 +169,16 @@ public class SoloTeleOp extends CommandOpMode {
                                         // Second press: Adjust servos to SCORING, open claw, return to MIDDLE_HOLD
                                         new SequentialCommandGroup(
                                                 new SetDeposit(robot, DepositPivotState.SCORING, HIGH_BUCKET_HEIGHT, false),
-                                                new SetDeposit(robot, DepositPivotState.SCORING, HIGH_BUCKET_HEIGHT, true),
-                                                new InstantCommand(() -> robot.deposit.setClawOpen(true)),
-
-                                                new WaitCommand(200),
-                                                new SetDeposit(robot, DepositPivotState.MIDDLE_HOLD, 0, false).withTimeout(1500),
-
+                                                new ParallelCommandGroup(
+                                                        new WaitCommand( 175),
+                                                        new InstantCommand(() -> robot.deposit.setClawOpen(true)),
+                                                        new WaitCommand( 150)
+                                                ),
+                                                new SetDeposit(robot, DepositPivotState.MIDDLE_HOLD,  0,false).withTimeout(1500),
                                                 new InstantCommand(() -> robot.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER)),
                                                 new InstantCommand(() -> robot.rightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER))
                                         ),
-                                        () -> isFirstDpadUpPress
+                                        ()-> isFirstDpadUpPress
                                 ),
                                 // Toggle the press state
                                 new InstantCommand(() -> isFirstDpadUpPress = !isFirstDpadUpPress)

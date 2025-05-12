@@ -70,7 +70,7 @@ public class BurritoBowl extends CommandOpMode {
                                 new BezierCurve(
                                         new Point(0, 105.13, Point.CARTESIAN),
 
-                                        new Point(0, 115.1, Point.CARTESIAN)
+                                        new Point(0, 116.1, Point.CARTESIAN)
                                 )
                         )
                         .setLinearHeadingInterpolation(Math.toRadians(-90), Math.toRadians(270))
@@ -83,7 +83,7 @@ public class BurritoBowl extends CommandOpMode {
                                 // Line 2
                                 new  BezierLine(
                                         new Point(0, 110.1, Point.CARTESIAN),
-                                        new Point(20, 122.945, Point.CARTESIAN)
+                                        new Point(21, 121.945, Point.CARTESIAN)
                                 )
                         )
                         .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
@@ -96,12 +96,12 @@ public class BurritoBowl extends CommandOpMode {
                         .addPath(
                                 // Line 3
                                 new  BezierCurve(
-                                        new Point(20, 122.945, Point.CARTESIAN),
+                                        new Point(21, 121.945, Point.CARTESIAN),
 //                                        new Point(15.972, 123.785, Point.CARTESIAN),
                                         new Point(15, 130.1, Point.CARTESIAN)
                                 )
                         )
-                        .setLinearHeadingInterpolation(Math.toRadians(369), Math.toRadians(-40))
+                        .setLinearHeadingInterpolation(Math.toRadians(369), Math.toRadians(-35))
                         .build());
 
 
@@ -112,7 +112,7 @@ public class BurritoBowl extends CommandOpMode {
                                 // Line 4
                                 new BezierLine(
                                         new Point(15, 130.1, Point.CARTESIAN),
-                                        new Point(23, 133.3, Point.CARTESIAN)
+                                        new Point(24, 134.3, Point.CARTESIAN)
                                 )
                         )
                         .setLinearHeadingInterpolation(Math.toRadians(315), Math.toRadians(0))
@@ -125,8 +125,8 @@ public class BurritoBowl extends CommandOpMode {
                         .addPath(
                                 // Line 5
                                 new BezierLine(
-                                        new Point(23, 133.3, Point.CARTESIAN),
-                                        new Point(18, 130.1, Point.CARTESIAN)
+                                        new Point(24, 134.3, Point.CARTESIAN),
+                                        new Point(16, 134.1, Point.CARTESIAN)
                                 )
                         )
                         .setLinearHeadingInterpolation(Math.toRadians(369), Math.toRadians(-45))
@@ -139,11 +139,11 @@ public class BurritoBowl extends CommandOpMode {
                         .addPath(
                                 // Line 6
                                 new BezierLine(
-                                        new Point(16.5, 133.1, Point.CARTESIAN),
+                                        new Point(16, 134.1, Point.CARTESIAN),
                                         new Point(22.7, 139.1, Point.CARTESIAN)
                                 )
                         )
-                        .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(23))
+                        .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(18))
                         .build());
 
 
@@ -154,7 +154,7 @@ public class BurritoBowl extends CommandOpMode {
                                 // Line 7
                                 new BezierLine(
                                         new Point(22.7, 139.1, Point.CARTESIAN),
-                                        new Point(19, 136.1, Point.CARTESIAN)
+                                        new Point(17, 138.1, Point.CARTESIAN)
                                 )
                         )
                         .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(-35))
@@ -167,7 +167,7 @@ public class BurritoBowl extends CommandOpMode {
                         .addPath(
                                 // Line 8
                                 new BezierCurve(
-                                        new Point(19, 133.1, Point.CARTESIAN),
+                                        new Point(17, 137.1, Point.CARTESIAN),
                                         new Point(63.706, 117.899, Point.CARTESIAN),
                                         new Point(62.157, 90, Point.CARTESIAN)
                                 )
@@ -379,15 +379,15 @@ public class BurritoBowl extends CommandOpMode {
                         scoreSampleCycleHalf(4),
 
                         // Sample 4
-                        intakeSampleCycleHalf(5, 200),
+                        intakeSampleCycleHalf(5, 330),
                         scoreSampleCycleHalf(6),
 
                         // Park
                         new InstantCommand(() -> robot.follower.setMaxPower(0.9)),
                         new InstantCommand(() -> FollowerConstants.zeroPowerAccelerationMultiplier = 6),
-
-                        intakeSubSampleCycleHalf(7),
-                        scoreSampleCycleHalfLast(8)
+                        new FollowPathCommand(robot.follower, paths.get(3)).setHoldEnd(true).beforeStarting(new WaitCommand(500))
+//                        intakeSubSampleCycleHalf(7),
+//                        scoreSampleCycleHalfLast(8)
                 )
         );
 

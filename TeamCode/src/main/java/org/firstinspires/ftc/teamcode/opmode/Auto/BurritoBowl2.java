@@ -60,18 +60,18 @@ public class BurritoBowl2 extends CommandOpMode {
                         .addPath(
                                 new BezierCurve(
                                         new Point(0, 105.13, Point.CARTESIAN),
-                                        new Point(0, 109.5, Point.CARTESIAN)
+                                        new Point(0, 111, Point.CARTESIAN)
                                 )
                         )
-                        .setLinearHeadingInterpolation(Math.toRadians(-90), Math.toRadians(270))
+                        .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(-35))
                         .setReversed(true)
                         .build());
         paths.add(
                 robot.follower.pathBuilder()
                         .addPath(
                                 new BezierLine(
-                                        new Point(0, 109.5, Point.CARTESIAN),
-                                        new Point(20, 122.945, Point.CARTESIAN)
+                                        new Point(0, 111, Point.CARTESIAN),
+                                        new Point(20, 121.945, Point.CARTESIAN)
                                 )
                         )
                         .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
@@ -80,7 +80,7 @@ public class BurritoBowl2 extends CommandOpMode {
                 robot.follower.pathBuilder()
                         .addPath(
                                 new BezierCurve(
-                                        new Point(20, 122.945, Point.CARTESIAN),
+                                        new Point(20, 121.945, Point.CARTESIAN),
                                         new Point(17, 128.1, Point.CARTESIAN)
                                 )
                         )
@@ -91,7 +91,7 @@ public class BurritoBowl2 extends CommandOpMode {
                         .addPath(
                                 new BezierLine(
                                         new Point(17, 128.1, Point.CARTESIAN),
-                                        new Point(22, 133.3, Point.CARTESIAN)
+                                        new Point(24, 132.3, Point.CARTESIAN)
                                 )
                         )
                         .setLinearHeadingInterpolation(Math.toRadians(315), Math.toRadians(0))
@@ -100,7 +100,7 @@ public class BurritoBowl2 extends CommandOpMode {
                 robot.follower.pathBuilder()
                         .addPath(
                                 new BezierLine(
-                                        new Point(23, 133.3, Point.CARTESIAN),
+                                        new Point(24, 132.3, Point.CARTESIAN),
                                         new Point(18, 130.1, Point.CARTESIAN)
                                 )
                         )
@@ -114,14 +114,14 @@ public class BurritoBowl2 extends CommandOpMode {
                                         new Point(22.7, 139.1, Point.CARTESIAN)
                                 )
                         )
-                        .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(23))
+                        .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(18))
                         .build());
         paths.add(
                 robot.follower.pathBuilder()
                         .addPath(
                                 new BezierLine(
                                         new Point(22.7, 139.1, Point.CARTESIAN),
-                                        new Point(18, 130.1, Point.CARTESIAN)
+                                        new Point(20, 132.1, Point.CARTESIAN)
                                 )
                         )
                         .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(-35))
@@ -130,13 +130,24 @@ public class BurritoBowl2 extends CommandOpMode {
                 robot.follower.pathBuilder()
                         .addPath(
                                 new BezierCurve(
-                                        new Point(18, 130.1, Point.CARTESIAN),
+                                        new Point(20, 132.1, Point.CARTESIAN),
                                         new Point(63.706, 117.899, Point.CARTESIAN),
-                                        new Point(62.157, 90, Point.CARTESIAN)
+                                        new Point(60.157, 90, Point.CARTESIAN)
                                 )
                         )
                         .setLinearHeadingInterpolation(Math.toRadians(-45), Math.toRadians(-90))
                         .build());
+//        robot.follower.pathBuilder()
+//                .addPath(
+//                        // Line 8
+//                        new BezierCurve(
+//                                new Point(60.157, 90, Point.CARTESIAN),
+//                                new Point(63.706, 117.899, Point.CARTESIAN),
+//                                new Point(20, 133.1, Point.CARTESIAN)
+//                        )
+//                )
+//                .setLinearHeadingInterpolation(Math.toRadians(25), Math.toRadians(-45))
+//                .build());
     }
 
     private SequentialCommandGroup intakeSampleCycleHalf(int pathNum, int extendoTarget) {
@@ -146,6 +157,7 @@ public class BurritoBowl2 extends CommandOpMode {
                         new FollowPathCommand(robot.follower, paths.get(pathNum)).setHoldEnd(true),
                         new SequentialCommandGroup(
                                 new SetIntake(robot, IntakePivotState.INTAKE, IntakeMotorState.FORWARD, 120, true),
+//                                new WaitCommand(400),
                                 new SetIntake(robot, IntakePivotState.INTAKE, IntakeMotorState.FORWARD, extendoTarget, true),
                                 new ParallelRaceGroup(
                                         new WaitUntilCommand(robot.intake::hasSample)
@@ -268,6 +280,8 @@ public class BurritoBowl2 extends CommandOpMode {
                         // Sample 1
                         new ParallelCommandGroup(
                                 new SetAuto(robot, DepositPivotState.PRESCORE, HIGH_BUCKET_HEIGHT, false).withTimeout(1000),
+                                new WaitCommand(200),
+
                                 new FollowPathCommand(robot.follower, paths.get(0)).setHoldEnd(true)
                         ),
                         new WaitCommand(200),
@@ -281,18 +295,18 @@ public class BurritoBowl2 extends CommandOpMode {
                         scoreSampleCycleHalf(2),
 
                         // Sample 3
-                        intakeSampleCycleHalf(3, 370),
+                        intakeSampleCycleHalf(3, 340),
                         scoreSampleCycleHalf(4),
 
                         // Sample 4
-                        intakeSampleCycleHalf(5, 200),
+                        intakeSampleCycleHalf(5, 330),
                         scoreSampleCycleHalf(6),
 
                         // Park
                         new InstantCommand(() -> robot.follower.setMaxPower(0.9)),
                         new InstantCommand(() -> FollowerConstants.zeroPowerAccelerationMultiplier = 11),
                         intakeSubSampleCycleHalf(7),
-                        scoreSampleCycleHalfLast(1)
+                        scoreSampleCycleHalfLast(8)
                 )
         );
 

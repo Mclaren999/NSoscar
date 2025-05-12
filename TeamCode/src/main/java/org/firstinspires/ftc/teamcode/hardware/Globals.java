@@ -66,7 +66,7 @@ public class Globals {
     public static double INTAKE_PIVOT_TRANSFER_POS = 0.25;
     public static double INTAKE_PIVOT_READY_TRANSFER_POS = 0.25;
     public static double INTAKE_PIVOT_INSIDE_POS = 0.25;
-    public static double INTAKE_PIVOT_INTAKE_POS = 0.83;
+    public static double INTAKE_PIVOT_INTAKE_POS = 0.8;
     public static double INTAKE_PIVOT_READY_INTAKE_POS = 0.54;
     public static double INTAKE_PIVOT_HOVER_INTAKE_POS = 0.71;
 
@@ -79,9 +79,9 @@ public class Globals {
     public static double DEPOSIT_PIVOT_MIDDLE_POS = 0.7;
     public static double DEPOSIT_PIVOT_AUTO_BAR_POS = 0.35;
     public static double DEPOSIT_PIVOT_INSIDE_POS = 1.00;
-    public static double DEPOSIT_PIVOT_SCORING_POS = 0.38;
+    public static double DEPOSIT_PIVOT_SCORING_POS = 0.35;
     public static double DEPOSIT_PIVOT_MIDDLE_POS_AUTO = 1;
-    public static double DEPOSIT_PIVOT_SPECIMEN_FRONT_INTAKE_POS = 0.825;//
+    public static double DEPOSIT_PIVOT_SPECIMEN_FRONT_INTAKE_POS = 0.85;//
     public static double DEPOSIT_PIVOT_SPECIMEN_BACK_INTAKE_POS = 0.5;//
     public static double DEPOSIT_PIVOT_SPECIMEN_FRONT_SCORING_POS = 0.65;//
     public static double DEPOSIT_PIVOT_SPECIMEN_BACK_SCORING_POS = 0.3;//
@@ -95,16 +95,16 @@ public class Globals {
 
     // Deposit Claw
     public static double DEPOSIT_CLAW_OPEN_POS = 0.45;
-    public static double DEPOSIT_CLAW_CLOSE_POS = 0.83;
+    public static double DEPOSIT_CLAW_CLOSE_POS = 0.84;
     public static double DEPOSIT_CLAW_AAA_POS = 0.4;
 
 
     // Deposit Wrist
-    public static double WRIST_SCORING = 0.45;
+    public static double WRIST_SCORING = 0.4;
     public static double WRIST_AUTO_BAR = 0.3;
     public static double WRIST_FRONT_SPECIMEN_SCORING = 0.15;
-    public static double WRIST_BACK_SPECIMEN_SCORING = 0.7;
-    public static double WRIST_FRONT_SPECIMEN_INTAKE = 0.4;//
+    public static double WRIST_BACK_SPECIMEN_SCORING = 0.9;
+    public static double WRIST_FRONT_SPECIMEN_INTAKE = 0.6;//
     public static double WRIST_BACK_SPECIMEN_INTAKE = 0.2;
     public static double WRIST_TRANSFER = 0.04;
     public static double WRIST_MIDDLE_HOLD = 0.04;

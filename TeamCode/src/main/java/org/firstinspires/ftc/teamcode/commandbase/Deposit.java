@@ -99,6 +99,15 @@ public class Deposit extends SubsystemBase {
 
         this.clawOpen = open;
     }
+    public void setWristOpen(boolean open) {
+        if (open) {
+            robot.depositWrist.setPosition(WRIST_FRONT_SPECIMEN_INTAKE);
+        } else {
+            robot.depositWrist.setPosition(WRIST_TRANSFER);
+        }
+
+        this.clawOpen = open;
+    }
 
     public void setPivot(DepositPivotState depositPivotState) {
         switch (depositPivotState) {
@@ -128,9 +137,9 @@ public class Deposit extends SubsystemBase {
                 robot.depositWrist.setPosition(WRIST_READY_TRANSFER);
                 break;
             case FRONT_SPECIMEN_INTAKE:
+                robot.depositWrist.setPosition(WRIST_FRONT_SPECIMEN_INTAKE);
                 robot.leftDepositPivot.setPosition(DEPOSIT_PIVOT_SPECIMEN_FRONT_INTAKE_POS);
                 robot.rightDepositPivot.setPosition(DEPOSIT_PIVOT_SPECIMEN_FRONT_INTAKE_POS);
-                robot.depositWrist.setPosition(WRIST_FRONT_SPECIMEN_INTAKE);
                 break;
             case BACK_SPECIMEN_INTAKE:
                 robot.leftDepositPivot.setPosition(DEPOSIT_PIVOT_SPECIMEN_BACK_INTAKE_POS);
