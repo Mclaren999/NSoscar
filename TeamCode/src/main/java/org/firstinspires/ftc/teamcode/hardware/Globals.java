@@ -69,9 +69,18 @@ public class Globals {
     public static double INTAKE_PIVOT_INTAKE_POS = 0.8;
     public static double INTAKE_PIVOT_READY_INTAKE_POS = 0.54;
     public static double INTAKE_PIVOT_HOVER_INTAKE_POS = 0.71;
+    public static double INTAKE_CLAW_OPEN_POS = 0.7;
+    public static double INTAKE_CLAW_CLOSE_POS = 0.4;
+
+    public static double INTAKE_RATIO_1_POS = 0.5;
+
+    public static double INTAKE_RATIO_2_POS = 0.42;
+
+    public static double INTAKE_RATIO_3_POS = 0.33;
+
 
     // Intake Extendo
-    public static double MAX_EXTENDO_EXTENSION = 350;
+    public static double MAX_EXTENDO_EXTENSION = 540;
 
     // Deposit Pivot
     public static double DEPOSIT_PIVOT_TRANSFER_POS = 0.85 ;

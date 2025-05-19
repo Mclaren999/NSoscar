@@ -99,15 +99,7 @@ public class Deposit extends SubsystemBase {
 
         this.clawOpen = open;
     }
-    public void setWristOpen(boolean open) {
-        if (open) {
-            robot.depositWrist.setPosition(WRIST_FRONT_SPECIMEN_INTAKE);
-        } else {
-            robot.depositWrist.setPosition(WRIST_TRANSFER);
-        }
 
-        this.clawOpen = open;
-    }
 
     public void setPivot(DepositPivotState depositPivotState) {
         switch (depositPivotState) {

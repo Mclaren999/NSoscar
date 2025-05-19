@@ -26,6 +26,7 @@ public class Intake extends SubsystemBase {
     private boolean waitingForReverse = false;
     private final ElapsedTime colorDetectionTimer = new ElapsedTime();
     private boolean readyForColorDetection = false;
+    public boolean clawIntakeOpen;
 
     private final double divideConstant = 65.0;
     public double target;
@@ -97,6 +98,26 @@ public class Intake extends SubsystemBase {
         return robot.extensionEncoder.getPosition() / divideConstant;
     }
 
+
+    public void setIntakeClawOpen(boolean open) {
+        if (open) {
+            robot.depositClaw.setPosition(INTAKE_CLAW_OPEN_POS);
+        } else {
+            robot.depositClaw.setPosition(INTAKE_CLAW_CLOSE_POS);
+        }
+
+        this.clawIntakeOpen = open;
+    }
+    public void setIntakeRatio(boolean open) {
+        if (open) {
+            robot.depositClaw.setPosition(INTAKE_RATIO_2_POS);
+        } else {
+            robot.depositClaw.setPosition(INTAKE_RATIO_3_POS);
+        }
+
+        this.clawIntakeOpen = open;
+    }
+
     public void setExtendoTarget(double target) {
         this.target = Math.max(Math.min(target, MAX_EXTENDO_EXTENSION), 0);
         extendoPIDF.setSetPoint(this.target);
@@ -165,73 +186,73 @@ public class Intake extends SubsystemBase {
         }
     }
 
-    public void autoUpdateActiveIntake() {
-        if (intakePivotState.equals(INTAKE) || intakePivotState.equals(INTAKE_READY)) {
-            switch (intakeMotorState) {
-                case FORWARD:
-                    if (hasSample()) {
-                        if (!readyForColorDetection) {
-                            colorDetectionTimer.reset();
-                            readyForColorDetection = true;
-                        } else if (readyForColorDetection && colorDetectionTimer.milliseconds() > 50) {
-                            readyForColorDetection = false;
-
-                            sampleColor = sampleColorDetected(robot.colorSensor.red(), robot.colorSensor.green(), robot.colorSensor.blue());
-                            if (correctSampleDetected()) {
-                                setActiveIntake(HOLD);
-                                if (opModeType.equals(OpModeType.TELEOP)) {
-                                    if (sampleColorTarget.equals(ANY_COLOR)) {
-//                                        if (soloTeleOp) {
-//                                            new SequentialCommandGroup(
-//                                                    new RealTransfer(robot).beforeStarting(new WaitCommand(125)),
-//                                                    new SetDeposit(robot, Deposit.DepositPivotState.SCORING, HIGH_BUCKET_HEIGHT, false)
-//                                            ).schedule(false);
-//                                        } else {
-                                        new SequentialCommandGroup(
-                                                new SetDeposit(robot, Deposit.DepositPivotState.MIDDLE_HOLD, 0, true),
-                                                new SetIntake(robot, IntakePivotState.TRANSFER, IntakeMotorState.HOLD, 0, false),
-                                                new WaitCommand(200),
-                                                new SetDeposit(robot, Deposit.DepositPivotState.TRANSFER,0,true),
-                                                new InstantCommand(() -> robot.deposit.setClawOpen(false)),
-                                                new WaitCommand(100),
-                                                new SetDeposit(robot, Deposit.DepositPivotState.MIDDLE_HOLD, 0, false).withTimeout(200)
-                                        ).schedule(false);
-//                                        }
-                                    } else {
-                                        new SetIntake(robot, INSIDE, HOLD, 0, false).schedule(false);
-                                    }
-                                }
-                            } else {
-                                reverseIntakeTimer.reset();
-                                setActiveIntake(REVERSE);
-                            }
-                        }
-                    }
-                    break;
-                case REVERSE:
-                    if (!hasSample() && !waitingForReverse) {
-                        reverseIntakeTimer.reset();
-                        waitingForReverse = true;
-                    } else if (!hasSample() && waitingForReverse && reverseIntakeTimer.milliseconds() > REVERSE_TIME_MS) {
-                        waitingForReverse = false;
-                        if (opModeType.equals(OpModeType.TELEOP)) {
-                            setActiveIntake(FORWARD);
-                        } else {
-                            setActiveIntake(STOP);
-                        }
-                    }
-                    break;
-                case HOLD:
-                    if (!correctSampleDetected() && hasSample() && Intake.intakePivotState.equals(INTAKE)) {
-                        setActiveIntake(REVERSE);
-                    }
-                    break;
-                // No point of setting intakeMotor to 0 again
-            }
-        } else if (intakePivotState.equals(TRANSFER) || intakePivotState.equals(INSIDE)) {
-            setActiveIntake(HOLD);
-        }
-    }
+//    public void autoUpdateActiveIntake() {
+//        if (intakePivotState.equals(INTAKE) || intakePivotState.equals(INTAKE_READY)) {
+//            switch (intakeMotorState) {
+//                case FORWARD:
+//                    if (hasSample()) {
+//                        if (!readyForColorDetection) {
+//                            colorDetectionTimer.reset();
+//                            readyForColorDetection = true;
+//                        } else if (readyForColorDetection && colorDetectionTimer.milliseconds() > 50) {
+//                            readyForColorDetection = false;
+//
+//                            sampleColor = sampleColorDetected(robot.colorSensor.red(), robot.colorSensor.green(), robot.colorSensor.blue());
+//                            if (correctSampleDetected()) {
+//                                setActiveIntake(HOLD);
+//                                if (opModeType.equals(OpModeType.TELEOP)) {
+//                                    if (sampleColorTarget.equals(ANY_COLOR)) {
+////                                        if (soloTeleOp) {
+////                                            new SequentialCommandGroup(
+////                                                    new RealTransfer(robot).beforeStarting(new WaitCommand(125)),
+////                                                    new SetDeposit(robot, Deposit.DepositPivotState.SCORING, HIGH_BUCKET_HEIGHT, false)
+////                                            ).schedule(false);
+////                                        } else {
+//                                        new SequentialCommandGroup(
+//                                                new SetDeposit(robot, Deposit.DepositPivotState.MIDDLE_HOLD, 0, true),
+//                                                new SetIntake(robot, IntakePivotState.TRANSFER, IntakeMotorState.HOLD, 0, false),
+//                                                new WaitCommand(200),
+//                                                new SetDeposit(robot, Deposit.DepositPivotState.TRANSFER,0,true),
+//                                                new InstantCommand(() -> robot.deposit.setClawOpen(false)),
+//                                                new WaitCommand(100),
+//                                                new SetDeposit(robot, Deposit.DepositPivotState.MIDDLE_HOLD, 0, false).withTimeout(200)
+//                                        ).schedule(false);
+////                                        }
+//                                    } else {
+//                                        new SetIntake(robot, INSIDE, HOLD, 0, false).schedule(false);
+//                                    }
+//                                }
+//                            } else {
+//                                reverseIntakeTimer.reset();
+//                                setActiveIntake(REVERSE);
+//                            }
+//                        }
+//                    }
+//                    break;
+//                case REVERSE:
+//                    if (!hasSample() && !waitingForReverse) {
+//                        reverseIntakeTimer.reset();
+//                        waitingForReverse = true;
+//                    } else if (!hasSample() && waitingForReverse && reverseIntakeTimer.milliseconds() > REVERSE_TIME_MS) {
+//                        waitingForReverse = false;
+//                        if (opModeType.equals(OpModeType.TELEOP)) {
+//                            setActiveIntake(FORWARD);
+//                        } else {
+//                            setActiveIntake(STOP);
+//                        }
+//                    }
+//                    break;
+//                case HOLD:
+//                    if (!correctSampleDetected() && hasSample() && Intake.intakePivotState.equals(INTAKE)) {
+//                        setActiveIntake(REVERSE);
+//                    }
+//                    break;
+//                // No point of setting intakeMotor to 0 again
+//            }
+//        } else if (intakePivotState.equals(TRANSFER) || intakePivotState.equals(INSIDE)) {
+//            setActiveIntake(HOLD);
+//        }
+//    }
 
     public static SampleColorDetected sampleColorDetected(int red, int green, int blue) {
         if (blue >= green && blue >= red) {
@@ -296,6 +317,6 @@ public class Intake extends SubsystemBase {
     @Override
     public void periodic() {
         autoUpdateExtendo();
-        autoUpdateActiveIntake();
+//        autoUpdateActiveIntake();
     }
 }

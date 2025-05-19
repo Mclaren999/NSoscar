@@ -70,6 +70,8 @@ public class SoloTeleOp extends CommandOpMode {
     private boolean isFirstDpadDownPress = true;
     private boolean isFirstTrianglePress = true;
     private boolean isFirstCirclePress = true;
+    private boolean isFirstRightStickPress = true;
+
 
     @Override
     public void initialize() {
@@ -116,7 +118,7 @@ public class SoloTeleOp extends CommandOpMode {
                 new UninterruptibleCommand(
                         new SequentialCommandGroup(
                                 new SetDeposit(robot, Deposit.DepositPivotState.MIDDLE_HOLD, 0, true),
-                                new SetIntake(robot, IntakePivotState.TRANSFER, IntakeMotorState.HOLD, 0, true),
+                                new SetIntake(robot, IntakePivotState.TRANSFER,  0,false),
                                 new WaitCommand(200),
                                 new SetDeposit(robot,DepositPivotState.TRANSFER,0,true),
                                 new InstantCommand(() -> robot.deposit.setClawOpen(false)),
@@ -272,148 +274,91 @@ public class SoloTeleOp extends CommandOpMode {
 
         driver.getGamepadButton(GamepadKeys.Button.CROSS).whenPressed(
                 new SequentialCommandGroup(
-                        new SetIntake(robot, IntakePivotState.INTAKE_READY, intakeMotorState, MAX_EXTENDO_EXTENSION, true),
-                        new InstantCommand(() -> robot.intake.toggleActiveIntake(SampleColorTarget.ANY_COLOR))
+                        new SetIntake(robot, IntakePivotState.INTAKE_READY,  MAX_EXTENDO_EXTENSION, true)
+//                        new InstantCommand(() -> robot.intake.toggleActiveIntake(SampleColorTarget.ANY_COLOR))
                 )
         );
 
         driver.getGamepadButton(GamepadKeys.Button.CIRCLE).whenPressed(
             new UninterruptibleCommand(
                     new SequentialCommandGroup(
-                            new ConditionalCommand(
-                                    // First press: Move to PRESCORE with slides and claw closed
-                                    new SequentialCommandGroup(
-                                            new SetIntake(robot, IntakePivotState.INTAKE_READY, IntakeMotorState.FORWARD, MAX_EXTENDO_EXTENSION, true)
-                                    ),
-                                    // Second press: Adjust servos to SCORING, wait for right bumper, open claw, return to MIDDLE_HOLD
-                                    new SequentialCommandGroup(
-                                            new SetIntake(robot, IntakePivotState.INTAKE, IntakeMotorState.FORWARD, MAX_EXTENDO_EXTENSION, true)
-                                    ),
-                                    () -> isFirstCirclePress
-                            ),
-                            // Toggle the press state
-                            new InstantCommand(() -> isFirstCirclePress = !isFirstCirclePress)
+                            new SetIntake(robot, IntakePivotState.INTAKE,  MAX_EXTENDO_EXTENSION, true),
+                            new WaitCommand(50),
+                            new InstantCommand(() -> robot.intake.setIntakeClawOpen(false)),
+                            new WaitCommand(150),
+
+                            new SetIntake(robot, IntakePivotState.INTAKE_READY,  MAX_EXTENDO_EXTENSION, false)
+
+//                        new InstantCommand(() -> robot.intake.toggleActiveIntake(SampleColorTarget.ANY_COLOR))
                     )
             )
         );
 
-        driver.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
+        driver.getGamepadButton(GamepadKeys.Button.TRIANGLE).whenPressed(
                 new SequentialCommandGroup(
-                        new SetIntake(robot, IntakePivotState.INTAKE_READY, IntakeMotorState.FORWARD, 0, true),
-                        new WaitCommand(800)
+                        new SetIntake(robot, IntakePivotState.INTAKE_READY,  0, false)
+
                 )
         );
 
-        driver.getGamepadButton(GamepadKeys.Button.TRIANGLE).whenPressed(
-
+        driver.getGamepadButton(GamepadKeys.Button.SQUARE).whenPressed(
                 new UninterruptibleCommand(
                         new SequentialCommandGroup(
-                                new ConditionalCommand(
-                                        // First press
-                                        new SequentialCommandGroup(
-                                                new ParallelCommandGroup(
-                                                        new InstantCommand(() -> robot.drive.setSubPusher(Drive.SubPusherState.OUT)),
-                                                        new SetIntake(robot, IntakePivotState.INTAKE, IntakeMotorState.FORWARD, 0, true)
-                                                )
-                                        ),
-                                        // Second press
-                                        new ParallelCommandGroup(
-                                                new SetIntake(robot, IntakePivotState.INTAKE, IntakeMotorState.FORWARD, MAX_EXTENDO_EXTENSION, true),
-                                                new SequentialCommandGroup(
-                                                        new WaitCommand(200),
-                                                        new InstantCommand(() -> robot.drive.setSubPusher(Drive.SubPusherState.IN))
-                                                )
-                                        ),
-                                        () -> isFirstTrianglePress
-                                ),
-                                // Toggle the press state
-                                new InstantCommand(() -> isFirstTrianglePress = !isFirstTrianglePress)
+                                new SetIntake(robot, IntakePivotState.INTAKE_READY,  MAX_EXTENDO_EXTENSION, true)
+
+//                        new InstantCommand(() -> robot.intake.toggleActiveIntake(SampleColorTarget.ANY_COLOR))
                         )
                 )
+
+
         );
 
         driver.getGamepadButton(GamepadKeys.Button.DPAD_RIGHT).whenPressed(
                 new InstantCommand(() -> robot.intake.setExtendoTarget(0))
         );
 
-        // TO-DO: need to make into 1 method in Drive.java
-        driver.getGamepadButton(GamepadKeys.Button.DPAD_LEFT).whenPressed(
-                new ConditionalCommand(
-                        new InstantCommand(() -> robot.drive.setSubPusher(Drive.SubPusherState.OUT)),
-                        new InstantCommand(() -> robot.drive.setSubPusher(Drive.SubPusherState.IN)),
-                        () -> Drive.subPusherState.equals(Drive.SubPusherState.IN))
-        );
-
-        driver.getGamepadButton(GamepadKeys.Button.DPAD_DOWN).whenPressed(
-                new SequentialCommandGroup(
-                    new InstantCommand(() -> telemetryData.addData("Degrees", robot.getYawDegrees())),
-                    new InstantCommand(() -> robot.follower.setTeleOpMovementVectors(0,0, robot.getYawDegrees() , false))
-                )
-        );
-
-        driver.getGamepadButton(GamepadKeys.Button.DPAD_UP).whenPressed(
-                new UninterruptibleCommand(
-                        new RepeatCommand(
-                                new SequentialCommandGroup(
-                                        new InstantCommand(() -> robot.follower.setStartingPose(new Pose(0, 0, Math.toRadians(0)))),
-                                        new FollowPathCommand(robot.follower,
-                                                robot.follower.pathBuilder()
-                                                        .addPath(
-                                                                new BezierLine(
-                                                                        new Point(robot.follower.getPose().getX(), robot.follower.getPose().getY(), Point.CARTESIAN),
-                                                                        new Point(0, 0, Point.CARTESIAN)
-                                                                )
-                                                        )
-                                                        .setLinearHeadingInterpolation(Math.toRadians(robot.follower.getTotalHeading()), Math.toRadians(180))
-                                                        .build(),
-                                                true
-                                        )
-                                ))
-                ).andThen(
-                        new InstantCommand(() -> robot.follower.startTeleopDrive())
-                )
-        );
-
-
-        driver.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON).whenPressed(
+        driver.getGamepadButton(GamepadKeys.Button.RIGHT_STICK_BUTTON).whenPressed(
                 new UninterruptibleCommand(
                         new SequentialCommandGroup(
-                                new UndoTransfer(robot),
-                                new SetIntake(robot, IntakePivotState.INTAKE, IntakeMotorState.REVERSE, MAX_EXTENDO_EXTENSION, true)
+                                new ConditionalCommand(
+                                        // First press: Move to PRESCORE with slides and claw closed
+                                        new SequentialCommandGroup(
+                                                new InstantCommand(() -> robot.intake.setIntakeRatio(true))
+
+                                                ),
+                                        // Second press: Adjust servos to SCORING, wait for right bumper, open claw, return to MIDDLE_HOLD
+                                        new SequentialCommandGroup(
+                                                new InstantCommand(() -> robot.intake.setIntakeRatio(false))
+
+                                                ),
+                                        () -> isFirstDpadDownPress
+                                ),
+                                // Toggle the press state
+                                new InstantCommand(() -> isFirstDpadDownPress = !isFirstDpadDownPress)
                         )
                 )
         );
 
-        driver.getGamepadButton(GamepadKeys.Button.RIGHT_STICK_BUTTON).whenPressed(
+        driver.getGamepadButton(GamepadKeys.Button.LEFT_STICK_BUTTON).whenPressed(
                 new UninterruptibleCommand(
-                        new SequentialCommandGroup(
-                                new UndoTransfer(robot),
-                                new SetIntake(robot, IntakePivotState.INTAKE, IntakeMotorState.REVERSE, MAX_EXTENDO_EXTENSION, true)
+                        new UninterruptibleCommand(
+                                new SequentialCommandGroup(
+                                        new SetIntake(robot, IntakePivotState.TRANSFER,  0, false),
+                                        new SetDeposit(robot, Deposit.DepositPivotState.MIDDLE_HOLD, 0, true),
+                                        new InstantCommand(() -> robot.deposit.setClawOpen(false)),
+                                        new InstantCommand(() -> robot.intake.setIntakeClawOpen(true)),
+                                        new WaitCommand(150),
+
+                                        new SetDeposit(robot, DepositPivotState.MIDDLE_HOLD,  0, false)
+
+//                        new InstantCommand(() -> robot.intake.toggleActiveIntake(SampleColorTarget.ANY_COLOR))
+                                )
                         )
                 )
         );
 
         driver.getGamepadButton(GamepadKeys.Button.PS).whenPressed(
-                new UninterruptibleCommand(
-                        new RepeatCommand(
-                                new SequentialCommandGroup(
-                                        new InstantCommand(() -> curPose = robot.follower.getPose()),
-                                        new FollowPathCommand(robot.follower,
-                                                robot.follower.pathBuilder()
-                                                        .addPath(
-                                                                new BezierLine(
-                                                                        new Point(robot.follower.getPose().getX(), robot.follower.getPose().getY(), Point.CARTESIAN),
-                                                                        new Point(15, 115.1, Point.CARTESIAN)
-                                                                )
-                                                        )
-                                                        .setLinearHeadingInterpolation(Math.toRadians(369), Math.toRadians(-45))
-                                                        .build(),
-                                                true
-                                        )
-                                ))
-                ).andThen(
-                        new InstantCommand(() -> robot.follower.startTeleopDrive())
-                )
+                new InstantCommand()
         );
 
         operator.getGamepadButton(GamepadKeys.Button.OPTIONS).whenPressed(

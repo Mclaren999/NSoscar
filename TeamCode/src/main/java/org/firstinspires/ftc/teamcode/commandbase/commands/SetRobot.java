@@ -23,7 +23,7 @@ public class SetRobot extends ParallelCommandGroup {
                 if (!Robot.robotState.equals(Robot.RobotState.TRANSFERRED)) {
                     addCommands(
                             new SetDeposit(robot, Deposit.DepositPivotState.MIDDLE_HOLD, 0, true),
-                            new SetIntake(robot, Intake.IntakePivotState.TRANSFER, Intake.IntakeMotorState.HOLD, 0, true)
+                            new SetIntake(robot, Intake.IntakePivotState.TRANSFER,  0, false)
                     );
 //                    addRequirements(robot.intake, robot.deposit);
                 } else {
