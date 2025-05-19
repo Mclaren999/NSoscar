@@ -3,8 +3,11 @@ package org.firstinspires.ftc.teamcode.commandbase.commands;
 import static org.firstinspires.ftc.teamcode.hardware.Globals.*;
 
 import com.seattlesolvers.solverslib.command.CommandBase;
+import com.seattlesolvers.solverslib.command.CommandScheduler;
+import com.seattlesolvers.solverslib.command.ConditionalCommand;
+import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.seattlesolvers.solverslib.command.WaitCommand;
+import com.seattlesolvers.solverslib.command.UninterruptibleCommand;
 
 import org.firstinspires.ftc.teamcode.commandbase.Deposit;
 import org.firstinspires.ftc.teamcode.hardware.Robot;
@@ -36,13 +39,11 @@ public class SetDeposit extends CommandBase {
             index = 3;
         } else {
             // Always close claw first in case of any arm movements that need to be done
-
+            robot.deposit.setClawOpen(clawOpen);
 
             // Move slides to above pivot ready extension if target is below the pivot ready extension so that arm can move later
             // If it is more than that just yolo it because slides are faster than the pivot so arm is ready to move instantly
             robot.deposit.setSlideTarget(target);
-            new WaitCommand(2000);
-            robot.deposit.setClawOpen(true);
 
             // Index for moving the arm
             if (pivotState.equals(Deposit.DepositPivotState.FRONT_SPECIMEN_SCORING) || pivotState.equals(Deposit.DepositPivotState.BACK_SPECIMEN_SCORING)) {
@@ -54,7 +55,6 @@ public class SetDeposit extends CommandBase {
             timer.reset();
         }
     }
-
 
     @Override
     public void execute() {
@@ -108,4 +108,3 @@ public class SetDeposit extends CommandBase {
 //        }
 //    }
 }
-

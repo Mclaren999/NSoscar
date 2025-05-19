@@ -42,6 +42,7 @@ public class Robot {
     public SolversMotor extension;
     public SolversMotor intakeMotor;
 
+
     public SolversMotor leftFront;
     public SolversMotor rightFront;
     public SolversMotor leftBack;
@@ -49,6 +50,10 @@ public class Robot {
 
     public SolversServo leftIntakePivot;
     public SolversServo rightIntakePivot;
+    public SolversServo intakeClaw;
+    public SolversServo intakeRatio;
+
+
 
     public SolversServo leftDepositPivot;
     public SolversServo rightDepositPivot;
@@ -65,6 +70,7 @@ public class Robot {
     public Motor.Encoder extensionEncoder;
 
     public RevColorSensorV3 colorSensor;
+
 
     public List<LynxModule> allHubs;
 
@@ -142,6 +148,10 @@ public class Robot {
         rightHang = new SolversCRServo(hardwareMap.get(CRServo.class, "rightHang"), 0.01);
         gearboxSwitcher = new SolversServo(hardwareMap.get(Servo.class, "gearboxSwitcher"), 0.01);
         subPusher = new SolversServo(hardwareMap.get(Servo.class, "subPusher"), 0.01);
+        intakeClaw = new SolversServo(hardwareMap.get(Servo.class, "intakeClaw"), 0.01);
+        intakeRatio = new SolversServo(hardwareMap.get(Servo.class, "intakeRatio"), 0.01);
+
+
 
         leftIntakePivot.setDirection(Servo.Direction.REVERSE);
         leftDepositPivot.setDirection(Servo.Direction.REVERSE);
@@ -150,7 +160,7 @@ public class Robot {
 
         colorSensor = (RevColorSensorV3) hardwareMap.colorSensor.get("colorSensor");
 
-        colorSensor.enableLed(true);
+        colorSensor.enableLed(false);
 
 //        limelight = hardwareMap.get(Limelight3A.class, "limelight");
 
